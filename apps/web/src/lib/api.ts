@@ -29,7 +29,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 import type {
   Supplier, Product, Order, DashboardSummary, ProfitAnalytics,
-  Channel, PlatformSettings, ImportPreviewResponse, ImportPreviewRow,
+  Channel, PlatformSettings, ImportPreviewResponse, ImportPreviewRow, ImportCommitResponse,
 } from "@/types";
 
 export const api = {
@@ -62,8 +62,9 @@ export const api = {
     request<void>(`/api/v1/products/${id}`, { method: "DELETE" }),
 
   // Import
-  importPreview: (file: File) => {
+  importPreview: (supplierId: string, file: File) => {
     const formData = new FormData();
+    formData.append("supplier_id", supplierId);
     formData.append("file", file);
     return request<ImportPreviewResponse>("/api/v1/products/import-preview", {
       method: "POST",
@@ -71,7 +72,7 @@ export const api = {
     });
   },
   importCommit: (supplierId: string, rows: ImportPreviewRow[]) =>
-    request<{ imported: number; product_ids: string[] }>("/api/v1/products/import-csv", {
+    request<ImportCommitResponse>("/api/v1/products/import-csv", {
       method: "POST",
       body: JSON.stringify({ supplier_id: supplierId, rows }),
     }),

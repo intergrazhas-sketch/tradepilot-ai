@@ -47,6 +47,12 @@ export default function ProductsPage() {
 
   const supplierName = (id?: string | null) => suppliers.find((s) => s.id === id)?.name || "—";
 
+  const profitHint = (gross: number) => {
+    if (gross > 0) return { tone: "text-profit-500", label: t("products.profitPositive") };
+    if (gross < 0) return { tone: "text-danger-500", label: t("products.profitNegative") };
+    return { tone: "text-ink-500", label: t("products.profitZero") };
+  };
+
   const aiImprove = async (id: string) => {
     setBusyId(id);
     try {
@@ -97,21 +103,26 @@ export default function ProductsPage() {
 
       {products && filtered.length > 0 && (
         <Card className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[900px]">
+          <table className="w-full text-sm min-w-[1100px]">
             <thead>
               <tr className="border-b border-line text-left text-xs text-ink-500">
                 <th className="px-4 py-3 font-medium">{t("products.name")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.supplier")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.cost")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.price")}</th>
+                <th className="px-4 py-3 font-medium">{t("products.profit")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.markup")}</th>
+                <th className="px-4 py-3 font-medium">{t("products.margin")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.stock")}</th>
                 <th className="px-4 py-3 font-medium">{t("common.status")}</th>
                 <th className="px-4 py-3 font-medium w-[172px]">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => (
+              {filtered.map((p) => {
+                const gross = p.gross_profit ?? (p.selling_price - p.cost_price);
+                const hint = profitHint(gross);
+                return (
                 <tr key={p.id} className="border-b border-line last:border-0 hover:bg-canvas/50 align-top">
                   <td className="px-4 py-3">
                     <div className="font-medium text-ink-900">{p.name_ai || p.name_raw}</div>
@@ -120,7 +131,12 @@ export default function ProductsPage() {
                   <td className="px-4 py-3 text-ink-700">{supplierName(p.supplier_id)}</td>
                   <td className="px-4 py-3 text-ink-700">{formatMoney(p.cost_price, p.currency)}</td>
                   <td className="px-4 py-3 font-medium text-ink-900">{formatMoney(p.selling_price, p.currency)}</td>
-                  <td className="px-4 py-3 text-ink-700">{formatPercent(p.markup_percent)}</td>
+                  <td className="px-4 py-3">
+                    <div className={`font-medium ${hint.tone}`}>{formatMoney(gross, p.currency)}</div>
+                    <div className={`text-[11px] mt-0.5 ${hint.tone}`}>{hint.label}</div>
+                  </td>
+                  <td className="px-4 py-3 text-ink-700">{formatPercent(p.markup_percent ?? 0)}</td>
+                  <td className="px-4 py-3 text-ink-700">{formatPercent(p.margin_percent ?? 0)}</td>
                   <td className="px-4 py-3">
                     <span className={p.stock_quantity <= 5 ? "text-warn-500 font-medium" : "text-ink-700"}>
                       {p.stock_quantity}
@@ -148,7 +164,7 @@ export default function ProductsPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );})}
             </tbody>
           </table>
         </Card>

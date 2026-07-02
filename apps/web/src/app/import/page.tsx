@@ -2,15 +2,27 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PageShell } from "@/components/PageShell";
-import { Card, Button, Select, Spinner, ErrorBanner, StatusBadge } from "@/components/ui";
+import { Card, Button, Select, Spinner, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
-import type { Supplier, ImportPreviewResponse } from "@/types";
+import type { Supplier, ImportPreviewResponse, ImportCommitResponse } from "@/types";
 
 const SAMPLE_CSV = `sku,name,description,category,brand,cost_price,stock_quantity,currency,image_url
 EL-9001,Bluetooth наушники TWS,Беспроводные наушники с кейсом,Электроника,SoundMax,4500,20,KZT,
 HM-9002,Набор кастрюль 3 предмета,Антипригарное покрытие,Дом и быт,HomeStyle,12000,5,KZT,`;
+
+const ROW_STATUS_LABEL: Record<string, string> = {
+  new: "Новый",
+  update: "Обновление",
+  error: "Ошибка",
+};
+
+const ROW_STATUS_CLASS: Record<string, string> = {
+  new: "bg-brand-50 text-brand-600",
+  update: "bg-warn-50 text-warn-500",
+  error: "bg-danger-50 text-danger-500",
+};
 
 export default function ImportPage() {
   const { t } = useI18n();
@@ -19,7 +31,7 @@ export default function ImportPage() {
   const [preview, setPreview] = useState<ImportPreviewResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ imported: number } | null>(null);
+  const [result, setResult] = useState<ImportCommitResponse | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -30,16 +42,19 @@ export default function ImportPage() {
   }, []);
 
   const handleFile = async (file: File) => {
+    if (!supplierId) return;
     setLoading(true);
     setError(null);
     setResult(null);
     try {
-      const res = await api.importPreview(file);
+      const res = await api.importPreview(supplierId, file);
       setPreview(res);
     } catch (e: any) {
       setError(e.message);
+      setPreview(null);
     } finally {
       setLoading(false);
+      if (fileInput.current) fileInput.current.value = "";
     }
   };
 
@@ -77,22 +92,24 @@ export default function ImportPage() {
             {suppliers.length === 0 && <option value="">Сначала добавьте поставщика</option>}
             {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </Select>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button variant="secondary" onClick={downloadSample}>{t("import.formatHint")}</Button>
             <Button onClick={() => fileInput.current?.click()} disabled={!supplierId}>
-              {t("import.uploadCsv")}
+              {t("import.uploadFile")}
             </Button>
             <input
               ref={fileInput}
               type="file"
-              accept=".csv"
+              accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
               className="hidden"
               onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
             />
           </div>
         </div>
-        <p className="text-xs text-ink-500 mt-3">
-          Поля CSV: sku, name, description, category, brand, cost_price, stock_quantity, currency, image_url
+        <p className="text-xs text-ink-500 mt-3">{t("import.supportedFormats")}</p>
+        <p className="text-xs text-ink-400 mt-1">{t("import.futureFormats")}</p>
+        <p className="text-xs text-ink-500 mt-1">
+          {t("import.columnsHint")}
         </p>
       </Card>
 
@@ -100,20 +117,26 @@ export default function ImportPage() {
 
       {result && (
         <Card className="p-5 mb-6 bg-profit-50 border-profit-500/20">
-          <p className="text-sm text-profit-500 font-medium">
-            Импортировано {result.imported} товар(ов). Откройте раздел "Товары", чтобы их увидеть.
-          </p>
+          <p className="text-sm text-profit-500 font-medium mb-2">{t("import.resultTitle")}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div><span className="text-ink-500">{t("import.added")}:</span> <strong>{result.added_count}</strong></div>
+            <div><span className="text-ink-500">{t("import.updated")}:</span> <strong>{result.updated_count}</strong></div>
+            <div><span className="text-ink-500">{t("import.skipped")}:</span> <strong>{result.skipped_count}</strong></div>
+            <div><span className="text-ink-500">{t("import.errors")}:</span> <strong>{result.error_count}</strong></div>
+          </div>
         </Card>
       )}
 
       {preview && (
         <Card className="overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-line">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-line gap-4 flex-wrap">
             <div className="text-sm text-ink-700">
               {preview.total_rows} {t("import.rows")} ·{" "}
-              <span className="text-profit-500 font-medium">{preview.valid_rows} {t("import.valid")}</span>
-              {preview.invalid_rows > 0 && (
-                <> · <span className="text-danger-500 font-medium">{preview.invalid_rows} {t("import.invalid")}</span></>
+              <span className="text-brand-600 font-medium">{preview.new_rows} {t("import.newRows")}</span>
+              {" · "}
+              <span className="text-warn-500 font-medium">{preview.update_rows} {t("import.updateRows")}</span>
+              {preview.error_rows > 0 && (
+                <> · <span className="text-danger-500 font-medium">{preview.error_rows} {t("import.invalid")}</span></>
               )}
             </div>
             <Button onClick={commit} disabled={loading || preview.valid_rows === 0}>
@@ -121,7 +144,7 @@ export default function ImportPage() {
             </Button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[800px]">
+            <table className="w-full text-sm min-w-[900px]">
               <thead>
                 <tr className="border-b border-line text-left text-xs text-ink-500">
                   <th className="px-4 py-2.5 font-medium">SKU</th>
@@ -130,12 +153,12 @@ export default function ImportPage() {
                   <th className="px-4 py-2.5 font-medium">Закупка</th>
                   <th className="px-4 py-2.5 font-medium">Рек. цена</th>
                   <th className="px-4 py-2.5 font-medium">Остаток</th>
-                  <th className="px-4 py-2.5 font-medium">Статус</th>
+                  <th className="px-4 py-2.5 font-medium">{t("common.status")}</th>
                 </tr>
               </thead>
               <tbody>
                 {preview.rows.map((row, i) => (
-                  <tr key={i} className={`border-b border-line last:border-0 ${!row.valid ? "bg-danger-50/40" : ""}`}>
+                  <tr key={i} className={`border-b border-line last:border-0 ${row.row_status === "error" ? "bg-danger-50/40" : ""}`}>
                     <td className="px-4 py-2.5 text-ink-700">{row.sku || "—"}</td>
                     <td className="px-4 py-2.5 font-medium text-ink-900">{row.name}</td>
                     <td className="px-4 py-2.5 text-ink-700">{row.category || "—"}</td>
@@ -143,9 +166,10 @@ export default function ImportPage() {
                     <td className="px-4 py-2.5 text-ink-900">{formatMoney(row.suggested_selling_price, row.currency)}</td>
                     <td className="px-4 py-2.5 text-ink-700">{row.stock_quantity}</td>
                     <td className="px-4 py-2.5">
-                      {row.valid ? <StatusBadge status="active" /> : (
-                        <span className="text-xs text-danger-500">{row.error}</span>
-                      )}
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${ROW_STATUS_CLASS[row.row_status] || ""}`}>
+                        {ROW_STATUS_LABEL[row.row_status] || row.row_status}
+                      </span>
+                      {row.error && <div className="text-xs text-danger-500 mt-1">{row.error}</div>}
                     </td>
                   </tr>
                 ))}

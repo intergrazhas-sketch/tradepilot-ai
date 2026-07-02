@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Optional, Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
+
+from app.services.pricing import calc_gross_profit, calc_markup_percent, calc_margin_percent
 
 
 # ---------- Supplier ----------
@@ -84,6 +86,17 @@ class ProductOut(ProductBase):
     model_config = ConfigDict(from_attributes=True)
     id: str
     created_at: datetime
+    gross_profit: float = 0
+    margin_percent: float = 0
+
+    @model_validator(mode="after")
+    def compute_profit_fields(self):
+        cost = self.cost_price or 0
+        sell = self.selling_price or 0
+        self.gross_profit = calc_gross_profit(cost, sell)
+        self.markup_percent = calc_markup_percent(cost, sell)
+        self.margin_percent = calc_margin_percent(cost, sell)
+        return self
 
 
 # ---------- Product Import ----------
@@ -99,6 +112,7 @@ class ProductImportPreviewRow(BaseModel):
     currency: str = "KZT"
     image_url: Optional[str] = None
     suggested_selling_price: float = 0
+    row_status: str = "error"  # new | update | error
     valid: bool = True
     error: Optional[str] = None
 
@@ -108,6 +122,9 @@ class ProductImportPreviewResponse(BaseModel):
     total_rows: int
     valid_rows: int
     invalid_rows: int
+    new_rows: int = 0
+    update_rows: int = 0
+    error_rows: int = 0
 
 
 class ProductImportCommitRequest(BaseModel):
@@ -115,9 +132,21 @@ class ProductImportCommitRequest(BaseModel):
     rows: list[ProductImportPreviewRow]
 
 
+class ProductImportCommitDetailRow(BaseModel):
+    sku: Optional[str] = None
+    name: str
+    action: str  # added | updated | skipped | error
+    product_id: Optional[str] = None
+    error: Optional[str] = None
+
+
 class ProductImportCommitResponse(BaseModel):
-    imported: int
+    added_count: int
+    updated_count: int
+    skipped_count: int
+    error_count: int
     product_ids: list[str]
+    rows: list[ProductImportCommitDetailRow]
 
 
 # ---------- Order ----------

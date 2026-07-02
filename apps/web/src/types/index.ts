@@ -24,6 +24,8 @@ export interface Product {
   cost_price: number;
   selling_price: number;
   markup_percent: number;
+  margin_percent: number;
+  gross_profit: number;
   stock_quantity: number;
   currency: string;
   status: string;
@@ -102,6 +104,7 @@ export interface ImportPreviewRow {
   currency: string;
   image_url?: string | null;
   suggested_selling_price: number;
+  row_status: "new" | "update" | "error";
   valid: boolean;
   error?: string | null;
 }
@@ -111,6 +114,26 @@ export interface ImportPreviewResponse {
   total_rows: number;
   valid_rows: number;
   invalid_rows: number;
+  new_rows: number;
+  update_rows: number;
+  error_rows: number;
+}
+
+export interface ImportCommitDetailRow {
+  sku?: string | null;
+  name: string;
+  action: "added" | "updated" | "skipped" | "error";
+  product_id?: string | null;
+  error?: string | null;
+}
+
+export interface ImportCommitResponse {
+  added_count: number;
+  updated_count: number;
+  skipped_count: number;
+  error_count: number;
+  product_ids: string[];
+  rows: ImportCommitDetailRow[];
 }
 
 export const ORDER_STATUSES = [

@@ -87,7 +87,7 @@ Ordered by the team's current priority (internal trading tool, not a public SaaS
 
 1. **Internal admin panel** — single-workspace dashboard, no external login/registration.
 2. **Suppliers** — list + add supplier.
-3. **Import** — CSV upload → server-side validation/preview → commit into the product catalog.
+3. **Import** — CSV and Excel (.xlsx) upload with preview (new/update/error rows) and upsert by supplier + SKU. PDF, Word, and OCR are planned for a later stage.
 4. **AI Product Studio** — improve title, improve description, suggest category, suggest price,
    or run all four at once ("Optimize everything"), with a clear before/after view.
 5. **Markup & profit calculation** — products carry cost/markup/selling price; orders compute

@@ -1,13 +1,23 @@
+def calc_gross_profit(cost_price: float, selling_price: float) -> float:
+    cost = cost_price or 0
+    sell = selling_price or 0
+    return round(sell - cost, 2)
+
+
 def calc_margin_percent(cost_price: float, selling_price: float) -> float:
-    if not selling_price:
+    sell = selling_price or 0
+    if sell <= 0:
         return 0.0
-    return round((selling_price - cost_price) / selling_price * 100, 1)
+    cost = cost_price or 0
+    return round((sell - cost) / sell * 100, 1)
 
 
 def calc_markup_percent(cost_price: float, selling_price: float) -> float:
-    if not cost_price:
+    cost = cost_price or 0
+    if cost <= 0:
         return 0.0
-    return round((selling_price - cost_price) / cost_price * 100, 1)
+    sell = selling_price or 0
+    return round((sell - cost) / cost * 100, 1)
 
 
 def price_from_markup(cost_price: float, markup_percent: float) -> float:
