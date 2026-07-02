@@ -51,7 +51,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-- API: http://localhost:8000 (Swagger: http://localhost:8000/docs)
+- API: http://localhost:8010 (Swagger: http://localhost:8010/docs)
 - Web: http://localhost:3010
 - Demo data is seeded automatically on first run.
 
@@ -63,7 +63,7 @@ cd apps/api
 python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python -m app.seed          # creates SQLite DB + demo data
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 8010
 ```
 
 > **Windows note:** use `venv\Scripts\activate` instead of `source …/activate`.

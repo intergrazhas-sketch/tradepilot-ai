@@ -36,21 +36,21 @@ services:
       DATABASE_URL: postgresql://tradepilot:tradepilot@postgres:5432/tradepilot
       CORS_ORIGINS: http://localhost:3010,http://127.0.0.1:3010
     ports:
-      - "8000:8000"
+      - "8010:8010"
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - ./apps/api:/app
     command: >
-      sh -c "python -m app.seed && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+      sh -c "python -m app.seed && uvicorn app.main:app --host 0.0.0.0 --port 8010 --reload"
 
   web:
     build:
       context: ./apps/web
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_URL: http://localhost:8010
     ports:
       - "3010:3010"
     depends_on:
