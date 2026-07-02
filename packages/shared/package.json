@@ -1,0 +1,6 @@
+{
+  "name": "@tradepilot/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared types and constants between apps/web and future services. Currently the frontend keeps its own copy in apps/web/src/types for simplicity; promote shared definitions here as the codebase grows (e.g. when a mobile app or admin panel is added)."
+}
