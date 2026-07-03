@@ -7,7 +7,7 @@ import { Card, StatCard, StatusBadge, DecisionBadge, Button, Spinner, EmptyState
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatDate, formatPercent } from "@/lib/format";
-import type { DashboardSummary, AnalyticsSummary, WorkflowHints, OrdersSummary } from "@/types";
+import type { DashboardSummary, AnalyticsSummary, WorkflowHints, OrdersSummary, SupplierDiscoverySummary } from "@/types";
 
 export default function DashboardPage() {
   const { t } = useI18n();
@@ -15,15 +15,23 @@ export default function DashboardPage() {
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [workflow, setWorkflow] = useState<WorkflowHints | null>(null);
   const [ordersSummary, setOrdersSummary] = useState<OrdersSummary | null>(null);
+  const [discoverySummary, setDiscoverySummary] = useState<SupplierDiscoverySummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reload = () => {
-    Promise.all([api.dashboardSummary(), api.analyticsSummary(), api.workflowHints(), api.ordersSummary()])
-      .then(([summary, stats, wf, os]) => {
+    Promise.all([
+      api.dashboardSummary(),
+      api.analyticsSummary(),
+      api.workflowHints(),
+      api.ordersSummary(),
+      api.supplierDiscoverySummary(),
+    ])
+      .then(([summary, stats, wf, os, ds]) => {
         setData(summary);
         setAnalytics(stats);
         setWorkflow(wf);
         setOrdersSummary(os);
+        setDiscoverySummary(ds);
       })
       .catch((e) => setError(e.message));
   };
@@ -56,6 +64,7 @@ export default function DashboardPage() {
               <Link href="/storefront"><Button variant="secondary">{t("nav.storefront")}</Button></Link>
               <Link href="/orders"><Button variant="secondary">{t("nav.orders")}</Button></Link>
               <Link href="/suppliers"><Button variant="secondary">{t("dashboard.btnSuppliers")}</Button></Link>
+              <Link href="/supplier-discovery"><Button variant="secondary">{t("nav.supplierDiscovery")}</Button></Link>
               <Link href="/products?filter=risk"><Button variant="ghost" className="border border-line">{t("dashboard.btnRiskBad")}</Button></Link>
             </div>
           </Card>
@@ -72,6 +81,21 @@ export default function DashboardPage() {
                 <StatCard label={t("dashboard.ordersDelivered")} value={String(ordersSummary.delivered_orders)} accent="profit" />
                 <StatCard label={t("dashboard.profit")} value={formatMoney(ordersSummary.total_profit)} accent="profit" />
                 <StatCard label={t("dashboard.avgMargin")} value={formatPercent(ordersSummary.average_margin_percent)} />
+              </div>
+            </Card>
+          )}
+
+          {discoverySummary && (
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-ink-900">{t("dashboard.discoveryBlock")}</h3>
+                <Link href="/supplier-discovery" className="text-sm text-brand-600 hover:underline">{t("nav.supplierDiscovery")}</Link>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard label={t("dashboard.discoveryTotalLeads")} value={String(discoverySummary.total_leads)} />
+                <StatCard label={t("dashboard.discoveryOpenPrice")} value={String(discoverySummary.open_price_leads)} accent="profit" />
+                <StatCard label={t("dashboard.discoveryHighFit")} value={String(discoverySummary.high_fit_leads)} accent="profit" />
+                <StatCard label={t("dashboard.discoveryTrendIdeas")} value={String(discoverySummary.trend_product_ideas)} />
               </div>
             </Card>
           )}

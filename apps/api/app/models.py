@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import (
-    Column, String, Float, Integer, DateTime, ForeignKey, Text, JSON
+    Column, String, Float, Integer, DateTime, ForeignKey, Text, JSON, Boolean
 )
 from sqlalchemy.orm import relationship
 
@@ -150,3 +150,48 @@ class PlatformSettings(Base):
     default_markup_percent = Column(Float, default=35.0)
     plan = Column(String, default="free")
     company_name = Column(String, default="My Store")
+
+
+class SupplierLead(Base):
+    __tablename__ = "supplier_leads"
+
+    id = Column(String, primary_key=True, default=gen_id)
+    name = Column(String, nullable=False)
+    website_url = Column(String, nullable=True)
+    country = Column(String, nullable=True)
+    city = Column(String, nullable=True)
+    category = Column(String, nullable=True)
+    contact_phone = Column(String, nullable=True)
+    contact_email = Column(String, nullable=True)
+    whatsapp = Column(String, nullable=True)
+    price_list_url = Column(String, nullable=True)
+    has_open_price_list = Column(Boolean, default=False)
+    has_wholesale_terms = Column(Boolean, default=False)
+    min_order_quantity = Column(Integer, nullable=True)
+    delivery_info = Column(Text, nullable=True)
+    source = Column(String, default="manual")
+    notes = Column(Text, nullable=True)
+    discovery_status = Column(String, default="new")
+    supplier_fit_score = Column(Integer, default=0)
+    supplier_fit_reason = Column(Text, nullable=True)
+    converted_supplier_id = Column(String, ForeignKey("suppliers.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    converted_supplier = relationship("Supplier", foreign_keys=[converted_supplier_id])
+    trend_products = relationship("TrendProductLead", back_populates="supplier_lead")
+
+
+class TrendProductLead(Base):
+    __tablename__ = "trend_product_leads"
+
+    id = Column(String, primary_key=True, default=gen_id)
+    title = Column(String, nullable=False)
+    category = Column(String, nullable=True)
+    source = Column(String, default="manual")
+    trend_score = Column(Integer, default=50)
+    demand_reason = Column(Text, nullable=True)
+    suggested_supplier_lead_id = Column(String, ForeignKey("supplier_leads.id"), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    supplier_lead = relationship("SupplierLead", back_populates="trend_products")

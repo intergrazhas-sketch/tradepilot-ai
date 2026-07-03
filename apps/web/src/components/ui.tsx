@@ -48,6 +48,10 @@ const STATUS_STYLES: Record<string, string> = {
   not_connected: "bg-ink-300/20 text-ink-500",
   planned: "bg-warn-50 text-warn-500",
   connected: "bg-profit-50 text-profit-500",
+
+  reviewed: "bg-brand-50 text-brand-600",
+  added_to_suppliers: "bg-profit-50 text-profit-500",
+  rejected: "bg-danger-50 text-danger-500",
 };
 
 const STATUS_LABELS_RU: Record<string, string> = {
@@ -66,6 +70,10 @@ const STATUS_LABELS_RU: Record<string, string> = {
   not_connected: "Не подключен",
   planned: "Запланирован",
   connected: "Подключен",
+
+  reviewed: "Проверен",
+  added_to_suppliers: "В поставщиках",
+  rejected: "Отклонён",
 
   good: "Хороший",
   risk: "Риск",

@@ -7,6 +7,8 @@ import { useI18n } from "@/lib/i18n-context";
 const NAV_ITEMS = [
   { href: "/", key: "nav.dashboard", icon: "grid" },
   { href: "/suppliers", key: "nav.suppliers", icon: "truck" },
+  { href: "/supplier-discovery", key: "nav.supplierDiscovery", icon: "search" },
+  { href: "/trend-products", key: "nav.trendProducts", icon: "trend" },
   { href: "/products", key: "nav.products", icon: "box" },
   { href: "/best-products", key: "nav.bestProducts", icon: "star" },
   { href: "/import", key: "nav.import", icon: "upload" },
@@ -25,6 +27,10 @@ function Icon({ name }: { name: string }) {
       return <svg className={common} viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "truck":
       return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M2 7h12v9H2z" stroke="currentColor" strokeWidth="1.6"/><path d="M14 10h4l3 3v3h-7z" stroke="currentColor" strokeWidth="1.6"/><circle cx="6" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.6"/><circle cx="17" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.6"/></svg>;
+    case "search":
+      return <svg className={common} viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.6"/><path d="M16 16l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>;
+    case "trend":
+      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M4 18V6M4 18h16M8 14l3-4 3 2 5-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>;
     case "box":
       return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" strokeWidth="1.6"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" strokeWidth="1.6"/><path d="M12 11v10" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "star":

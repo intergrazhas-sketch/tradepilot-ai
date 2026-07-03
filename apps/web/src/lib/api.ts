@@ -31,6 +31,7 @@ import type {
   Supplier, Product, Order, OrdersSummary, ManualOrderCreate, DashboardSummary, ProfitAnalytics,
   Channel, PlatformSettings, ImportPreviewResponse, ImportPreviewRow, ImportCommitResponse,
   AnalyticsSummary, SupplierAnalyticsItem, WorkflowHints,
+  SupplierLead, SupplierDiscoverySummary, TrendProductLead, SupplierLeadFilter,
 } from "@/types";
 
 export const api = {
@@ -139,4 +140,21 @@ export const api = {
   getSettings: () => request<PlatformSettings>("/api/v1/settings"),
   updateSettings: (data: Partial<PlatformSettings>) =>
     request<PlatformSettings>("/api/v1/settings", { method: "PUT", body: JSON.stringify(data) }),
+
+  // Supplier Discovery
+  listSupplierLeads: (filter?: SupplierLeadFilter) =>
+    request<SupplierLead[]>(`/api/v1/supplier-discovery/leads${filter && filter !== "all" ? `?filter=${filter}` : ""}`),
+  supplierDiscoverySummary: () =>
+    request<SupplierDiscoverySummary>("/api/v1/supplier-discovery/summary"),
+  createSupplierLead: (data: Partial<SupplierLead>) =>
+    request<SupplierLead>("/api/v1/supplier-discovery/leads", { method: "POST", body: JSON.stringify(data) }),
+  updateSupplierLead: (id: string, data: Partial<SupplierLead>) =>
+    request<SupplierLead>(`/api/v1/supplier-discovery/leads/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  convertLeadToSupplier: (id: string) =>
+    request<{ lead: SupplierLead; supplier: Supplier }>(`/api/v1/supplier-discovery/leads/${id}/convert-to-supplier`, { method: "POST" }),
+
+  // Trend Products
+  listTrendProductLeads: () => request<TrendProductLead[]>("/api/v1/trend-products/leads"),
+  createTrendProductLead: (data: Partial<TrendProductLead>) =>
+    request<TrendProductLead>("/api/v1/trend-products/leads", { method: "POST", body: JSON.stringify(data) }),
 };

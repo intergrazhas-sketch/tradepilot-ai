@@ -236,3 +236,50 @@ export const ORDER_STATUSES = [
 ] as const;
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export interface SupplierLead {
+  id: string;
+  name: string;
+  website_url?: string | null;
+  country?: string | null;
+  city?: string | null;
+  category?: string | null;
+  contact_phone?: string | null;
+  contact_email?: string | null;
+  whatsapp?: string | null;
+  price_list_url?: string | null;
+  has_open_price_list: boolean;
+  has_wholesale_terms: boolean;
+  min_order_quantity?: number | null;
+  delivery_info?: string | null;
+  source: string;
+  notes?: string | null;
+  discovery_status: "new" | "reviewed" | "added_to_suppliers" | "rejected";
+  supplier_fit_score: number;
+  supplier_fit_reason?: string | null;
+  converted_supplier_id?: string | null;
+  created_at: string;
+}
+
+export interface SupplierDiscoverySummary {
+  total_leads: number;
+  open_price_leads: number;
+  high_fit_leads: number;
+  new_leads: number;
+  trend_product_ideas: number;
+}
+
+export interface TrendProductLead {
+  id: string;
+  title: string;
+  category?: string | null;
+  source: string;
+  trend_score: number;
+  demand_reason?: string | null;
+  suggested_supplier_lead_id?: string | null;
+  supplier_lead_name?: string | null;
+  notes?: string | null;
+  created_at: string;
+}
+
+export type SupplierLeadFilter = "all" | "open_price" | "wholesale" | "high_score" | "new" | "rejected";

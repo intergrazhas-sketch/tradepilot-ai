@@ -351,6 +351,95 @@ class RecommendationsResponse(BaseModel):
     recommendations: list[str]
 
 
+# ---------- Supplier Discovery ----------
+
+class SupplierLeadBase(BaseModel):
+    name: str
+    website_url: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    category: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    whatsapp: Optional[str] = None
+    price_list_url: Optional[str] = None
+    has_open_price_list: bool = False
+    has_wholesale_terms: bool = False
+    min_order_quantity: Optional[int] = None
+    delivery_info: Optional[str] = None
+    source: str = "manual"
+    notes: Optional[str] = None
+
+
+class SupplierLeadCreate(SupplierLeadBase):
+    pass
+
+
+class SupplierLeadUpdate(BaseModel):
+    name: Optional[str] = None
+    website_url: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    category: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    whatsapp: Optional[str] = None
+    price_list_url: Optional[str] = None
+    has_open_price_list: Optional[bool] = None
+    has_wholesale_terms: Optional[bool] = None
+    min_order_quantity: Optional[int] = None
+    delivery_info: Optional[str] = None
+    source: Optional[str] = None
+    notes: Optional[str] = None
+    discovery_status: Optional[str] = None
+
+
+class SupplierLeadOut(SupplierLeadBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    discovery_status: str
+    supplier_fit_score: int
+    supplier_fit_reason: Optional[str] = None
+    converted_supplier_id: Optional[str] = None
+    created_at: datetime
+
+
+class SupplierDiscoverySummary(BaseModel):
+    total_leads: int
+    open_price_leads: int
+    high_fit_leads: int
+    new_leads: int
+    trend_product_ideas: int
+
+
+class ConvertLeadResponse(BaseModel):
+    lead: SupplierLeadOut
+    supplier: SupplierOut
+
+
+# ---------- Trend Products ----------
+
+class TrendProductLeadBase(BaseModel):
+    title: str
+    category: Optional[str] = None
+    source: str = "manual"
+    trend_score: int = 50
+    demand_reason: Optional[str] = None
+    suggested_supplier_lead_id: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class TrendProductLeadCreate(TrendProductLeadBase):
+    pass
+
+
+class TrendProductLeadOut(TrendProductLeadBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    supplier_lead_name: Optional[str] = None
+    created_at: datetime
+
+
 # ---------- Channels ----------
 
 class ChannelBase(BaseModel):
