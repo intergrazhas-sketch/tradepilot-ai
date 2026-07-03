@@ -34,6 +34,7 @@ import type {
   SupplierLead, SupplierDiscoverySummary, TrendProductLead, SupplierLeadFilter,
   SupplierSearchRequest, SupplierSearchSummary, SupplierSearchResultCreate,
   SupplierSearchProviderStatus, SupplierSearchWebResult, SupplierSearchLiveRunResponse,
+  ProductListing, ListingSummary,
 } from "@/types";
 
 export const api = {
@@ -63,6 +64,13 @@ export const api = {
   },
   listBestProducts: (sortBy: "score" | "profit" | "margin" = "score") =>
     request<Product[]>(`/api/v1/products/best?sort_by=${sortBy}`),
+  listingSummary: () => request<ListingSummary>("/api/v1/products/listing-summary"),
+  listListingReady: () => request<Product[]>("/api/v1/products/listing-ready"),
+  getProductListing: (id: string) => request<ProductListing>(`/api/v1/products/${id}/listing`),
+  generateProductListing: (id: string) =>
+    request<{ product: Product; generated_with: string }>(`/api/v1/products/${id}/generate-listing`, { method: "POST" }),
+  updateProductListing: (id: string, data: Partial<ProductListing>) =>
+    request<ProductListing>(`/api/v1/products/${id}/listing`, { method: "PATCH", body: JSON.stringify(data) }),
   updateTestStatus: (id: string, test_status: Product["test_status"]) =>
     request<Product>(`/api/v1/products/${id}/test-status`, {
       method: "PATCH",

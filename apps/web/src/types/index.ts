@@ -35,6 +35,32 @@ export interface Product {
   status: string;
   image_url?: string | null;
   created_at: string;
+  listing_title?: string | null;
+  listing_description?: string | null;
+  listing_bullets?: string[] | null;
+  listing_keywords?: string[] | null;
+  listing_status?: "draft" | "ready" | "needs_review";
+  listing_score?: number;
+  listing_notes?: string | null;
+  last_listing_generated_at?: string | null;
+}
+
+export interface ProductListing {
+  product_id: string;
+  listing_title?: string | null;
+  listing_description?: string | null;
+  listing_bullets: string[];
+  listing_keywords: string[];
+  listing_status: "draft" | "ready" | "needs_review";
+  listing_score: number;
+  listing_notes?: string | null;
+  last_listing_generated_at?: string | null;
+}
+
+export interface ListingSummary {
+  ready: number;
+  needs_review: number;
+  draft: number;
 }
 
 export interface OrderItem {

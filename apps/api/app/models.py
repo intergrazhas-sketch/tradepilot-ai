@@ -65,6 +65,15 @@ class Product(Base):
     test_status = Column(String, default="none")  # none, candidate, testing, rejected
     image_url = Column(String, nullable=True)
 
+    listing_title = Column(String, nullable=True)
+    listing_description = Column(Text, nullable=True)
+    listing_bullets = Column(JSON, nullable=True)
+    listing_keywords = Column(JSON, nullable=True)
+    listing_status = Column(String, default="draft")
+    listing_score = Column(Integer, default=0)
+    listing_notes = Column(Text, nullable=True)
+    last_listing_generated_at = Column(DateTime, nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow)
 
     supplier = relationship("Supplier", back_populates="products")

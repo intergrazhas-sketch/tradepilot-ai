@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
 import { Card, Button, Select, DecisionBadge, TestStatusBadge, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
+import { ProductListingModal } from "@/components/ProductListingModal";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
@@ -18,6 +19,7 @@ export default function BestProductsPage() {
   const [sortBy, setSortBy] = useState<SortBy>("score");
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [listingProduct, setListingProduct] = useState<Product | null>(null);
 
   const load = () => {
     api.listBestProducts(sortBy).then(setProducts).catch((e) => setError(e.message));
@@ -103,6 +105,9 @@ export default function BestProductsPage() {
                   <td className="px-4 py-3 text-xs text-ink-600 max-w-[160px]">{p.decision_reason}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col gap-1.5">
+                      <Button variant="secondary" className="!px-2 !py-1 text-xs" disabled={busyId === p.id} onClick={() => setListingProduct(p)}>
+                        {t("listing.prepareCard")}
+                      </Button>
                       <Button variant="secondary" className="!px-2 !py-1 text-xs" disabled={busyId === p.id} onClick={() => setTestStatus(p.id, "candidate")}>
                         {t("testStatus.markCandidate")}
                       </Button>
@@ -120,6 +125,13 @@ export default function BestProductsPage() {
           </table>
         </Card>
       )}
+
+      <ProductListingModal
+        product={listingProduct}
+        open={!!listingProduct}
+        onClose={() => setListingProduct(null)}
+        onSaved={load}
+      />
     </PageShell>
   );
 }

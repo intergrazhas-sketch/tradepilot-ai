@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/PageShell";
 import { Card, Button, Input, Select, DecisionBadge, TestStatusBadge, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
+import { ProductListingModal, listingStatusLabel } from "@/components/ProductListingModal";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
@@ -30,6 +31,7 @@ function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [decisionFilter, setDecisionFilter] = useState<DecisionFilter>("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [listingProduct, setListingProduct] = useState<Product | null>(null);
 
   const load = () => {
     api.listProducts().then(setProducts).catch((e) => setError(e.message));
@@ -179,7 +181,7 @@ function ProductsPage() {
                 <th className="px-4 py-3 font-medium">{t("products.margin")}</th>
                 <th className="px-4 py-3 font-medium">{t("decision.score")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.stock")}</th>
-                <th className="px-4 py-3 font-medium w-[172px]">{t("common.actions")}</th>
+                <th className="px-4 py-3 font-medium w-[200px]">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -194,6 +196,11 @@ function ProductsPage() {
                     <div className="flex flex-wrap gap-1.5">
                       <DecisionBadge status={p.decision_status} label={decisionLabel(p.decision_status)} />
                       <TestStatusBadge status={p.test_status} label={testLabel(p.test_status)} />
+                      {(p.listing_status || p.listing_score) ? (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-canvas text-ink-600">
+                          {listingStatusLabel(t, p.listing_status)} · {p.listing_score ?? 0}
+                        </span>
+                      ) : null}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-xs text-ink-600 max-w-[180px]">{p.decision_reason || "—"}</td>
@@ -212,11 +219,19 @@ function ProductsPage() {
                       {p.stock_quantity}
                     </span>
                   </td>
-                  <td className="px-4 py-3 w-[172px]">
-                    <div className="flex flex-col gap-2 min-w-[156px]">
+                  <td className="px-4 py-3 w-[200px]">
+                    <div className="flex flex-col gap-2 min-w-[168px]">
                       <Button
                         variant="secondary"
                         className="!px-2.5 !py-1.5 text-xs w-full justify-start whitespace-normal text-left leading-snug"
+                        disabled={busyId === p.id}
+                        onClick={() => setListingProduct(p)}
+                      >
+                        {t("listing.cardButton")}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="!px-2.5 !py-1.5 text-xs w-full justify-start whitespace-normal text-left leading-snug border border-line/60"
                         disabled={busyId === p.id}
                         onClick={() => aiImprove(p.id)}
                       >
@@ -224,7 +239,7 @@ function ProductsPage() {
                       </Button>
                       <Button
                         variant="ghost"
-                        className="!px-2.5 !py-1.5 text-xs w-full justify-start whitespace-normal text-left leading-snug border border-line/60"
+                        className="!px-2.5 !py-1 text-xs w-full justify-start border border-line/60"
                         disabled={busyId === p.id}
                         onClick={() => recalcPrice(p.id)}
                       >
@@ -246,6 +261,13 @@ function ProductsPage() {
           </table>
         </Card>
       )}
+
+      <ProductListingModal
+        product={listingProduct}
+        open={!!listingProduct}
+        onClose={() => setListingProduct(null)}
+        onSaved={load}
+      />
     </PageShell>
   );
 }

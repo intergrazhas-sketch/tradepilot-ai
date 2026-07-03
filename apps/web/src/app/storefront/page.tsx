@@ -7,6 +7,7 @@ import { Card, Button, Input, Modal, Spinner, EmptyState, ErrorBanner, DecisionB
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { productDisplayTitle, productDisplayDescription } from "@/components/ProductListingModal";
 import type { Product, Supplier } from "@/types";
 
 function isStorefrontProduct(p: Product) {
@@ -43,7 +44,7 @@ export default function StorefrontPage() {
     if (!products) return [];
     if (!search) return products;
     const q = search.toLowerCase();
-    return products.filter((p) => (p.name_ai || p.name_raw).toLowerCase().includes(q));
+    return products.filter((p) => productDisplayTitle(p).toLowerCase().includes(q));
   }, [products, search]);
 
   const openOrder = (p: Product) => {
@@ -119,7 +120,10 @@ export default function StorefrontPage() {
               <DecisionBadge status={p.decision_status} label={decisionLabel(p.decision_status)} />
               <span className="text-xs text-ink-500">{t("decision.score")}: {p.decision_score}</span>
             </div>
-            <div className="text-sm font-medium text-ink-900 mb-1 line-clamp-2 flex-1">{p.name_ai || p.name_raw}</div>
+            <div className="text-sm font-medium text-ink-900 mb-1 line-clamp-2 flex-1">{productDisplayTitle(p)}</div>
+            {productDisplayDescription(p) && (
+              <p className="text-xs text-ink-500 mb-2 line-clamp-2">{productDisplayDescription(p)}</p>
+            )}
             <div className="text-xs text-ink-500 mb-3">{t("products.supplier")}: {supplierName(p.supplier_id)}</div>
             <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs mb-4">
               <div className="text-ink-500">{t("products.price")}</div>
@@ -139,7 +143,7 @@ export default function StorefrontPage() {
       <Modal open={!!orderProduct} onClose={() => setOrderProduct(null)} title={t("storefront.createOrder")}>
         {orderProduct && !success && (
           <div className="space-y-3">
-            <div className="text-sm font-medium text-ink-900">{orderProduct.name_ai || orderProduct.name_raw}</div>
+            <div className="text-sm font-medium text-ink-900">{productDisplayTitle(orderProduct)}</div>
             <div className="text-xs text-ink-500">{t("products.supplier")}: {supplierName(orderProduct.supplier_id)}</div>
             <Input
               label={t("storefront.quantity")}

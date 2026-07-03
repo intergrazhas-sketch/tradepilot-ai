@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: "/trend-products", key: "nav.trendProducts", icon: "trend" },
   { href: "/products", key: "nav.products", icon: "box" },
   { href: "/best-products", key: "nav.bestProducts", icon: "star" },
+  { href: "/listing-ready", key: "nav.listingReady", icon: "card" },
   { href: "/import", key: "nav.import", icon: "upload" },
   { href: "/ai-studio", key: "nav.aiStudio", icon: "sparkles" },
   { href: "/storefront", key: "nav.storefront", icon: "store" },
@@ -38,6 +39,8 @@ function Icon({ name }: { name: string }) {
       return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" strokeWidth="1.6"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" strokeWidth="1.6"/><path d="M12 11v10" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "star":
       return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M12 3l2.4 7.4H22l-6 4.6 2.3 7-6.3-4.6L5.7 22l2.3-7-6-4.6h7.6L12 3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>;
+    case "card":
+      return <svg className={common} viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6"/><path d="M3 10h18" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "upload":
       return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "sparkles":

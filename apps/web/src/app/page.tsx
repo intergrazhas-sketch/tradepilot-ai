@@ -7,7 +7,7 @@ import { Card, StatCard, StatusBadge, DecisionBadge, Button, Spinner, EmptyState
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatDate, formatPercent } from "@/lib/format";
-import type { DashboardSummary, AnalyticsSummary, WorkflowHints, OrdersSummary, SupplierDiscoverySummary, SupplierSearchSummary } from "@/types";
+import type { DashboardSummary, AnalyticsSummary, WorkflowHints, OrdersSummary, SupplierDiscoverySummary, SupplierSearchSummary, ListingSummary } from "@/types";
 
 export default function DashboardPage() {
   const { t } = useI18n();
@@ -17,6 +17,7 @@ export default function DashboardPage() {
   const [ordersSummary, setOrdersSummary] = useState<OrdersSummary | null>(null);
   const [discoverySummary, setDiscoverySummary] = useState<SupplierDiscoverySummary | null>(null);
   const [searchSummary, setSearchSummary] = useState<SupplierSearchSummary | null>(null);
+  const [listingSummary, setListingSummary] = useState<ListingSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reload = () => {
@@ -27,14 +28,16 @@ export default function DashboardPage() {
       api.ordersSummary(),
       api.supplierDiscoverySummary(),
       api.supplierSearchSummary(),
+      api.listingSummary(),
     ])
-      .then(([summary, stats, wf, os, ds, ss]) => {
+      .then(([summary, stats, wf, os, ds, ss, ls]) => {
         setData(summary);
         setAnalytics(stats);
         setWorkflow(wf);
         setOrdersSummary(os);
         setDiscoverySummary(ds);
         setSearchSummary(ss);
+        setListingSummary(ls);
       })
       .catch((e) => setError(e.message));
   };
@@ -85,6 +88,20 @@ export default function DashboardPage() {
                 <StatCard label={t("dashboard.ordersDelivered")} value={String(ordersSummary.delivered_orders)} accent="profit" />
                 <StatCard label={t("dashboard.profit")} value={formatMoney(ordersSummary.total_profit)} accent="profit" />
                 <StatCard label={t("dashboard.avgMargin")} value={formatPercent(ordersSummary.average_margin_percent)} />
+              </div>
+            </Card>
+          )}
+
+          {listingSummary && (
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-ink-900">{t("dashboard.listingBlock")}</h3>
+                <Link href="/listing-ready" className="text-sm text-brand-600 hover:underline">{t("nav.listingReady")}</Link>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <StatCard label={t("dashboard.listingReady")} value={String(listingSummary.ready)} accent="profit" />
+                <StatCard label={t("dashboard.listingNeedsReview")} value={String(listingSummary.needs_review)} accent="warn" />
+                <StatCard label={t("dashboard.listingDraft")} value={String(listingSummary.draft)} />
               </div>
             </Card>
           )}

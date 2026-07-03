@@ -60,6 +60,14 @@ class ProductBase(BaseModel):
     status: str = "draft"
     test_status: str = "none"
     image_url: Optional[str] = None
+    listing_title: Optional[str] = None
+    listing_description: Optional[str] = None
+    listing_bullets: Optional[list[str]] = None
+    listing_keywords: Optional[list[str]] = None
+    listing_status: str = "draft"
+    listing_score: int = 0
+    listing_notes: Optional[str] = None
+    last_listing_generated_at: Optional[datetime] = None
 
 
 class ProductCreate(ProductBase):
@@ -87,6 +95,38 @@ class ProductUpdate(BaseModel):
 
 class ProductTestStatusUpdate(BaseModel):
     test_status: str  # none | candidate | testing | rejected
+
+
+class ProductListingUpdate(BaseModel):
+    listing_title: Optional[str] = None
+    listing_description: Optional[str] = None
+    listing_bullets: Optional[list[str]] = None
+    listing_keywords: Optional[list[str]] = None
+    listing_status: Optional[str] = None
+    listing_notes: Optional[str] = None
+
+
+class ProductListingOut(BaseModel):
+    product_id: str
+    listing_title: Optional[str] = None
+    listing_description: Optional[str] = None
+    listing_bullets: list[str] = []
+    listing_keywords: list[str] = []
+    listing_status: str = "draft"
+    listing_score: int = 0
+    listing_notes: Optional[str] = None
+    last_listing_generated_at: Optional[datetime] = None
+
+
+class ProductListingGenerateResponse(BaseModel):
+    product: "ProductOut"
+    generated_with: str
+
+
+class ListingSummary(BaseModel):
+    ready: int
+    needs_review: int
+    draft: int
 
 
 class ProductOut(ProductBase):

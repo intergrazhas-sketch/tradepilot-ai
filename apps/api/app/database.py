@@ -34,6 +34,19 @@ def ensure_schema():
     with engine.begin() as conn:
         if "test_status" not in cols:
             conn.execute(text("ALTER TABLE products ADD COLUMN test_status VARCHAR DEFAULT 'none'"))
+        listing_migrations = {
+            "listing_title": "ALTER TABLE products ADD COLUMN listing_title VARCHAR",
+            "listing_description": "ALTER TABLE products ADD COLUMN listing_description TEXT",
+            "listing_bullets": "ALTER TABLE products ADD COLUMN listing_bullets JSON",
+            "listing_keywords": "ALTER TABLE products ADD COLUMN listing_keywords JSON",
+            "listing_status": "ALTER TABLE products ADD COLUMN listing_status VARCHAR DEFAULT 'draft'",
+            "listing_score": "ALTER TABLE products ADD COLUMN listing_score INTEGER DEFAULT 0",
+            "listing_notes": "ALTER TABLE products ADD COLUMN listing_notes TEXT",
+            "last_listing_generated_at": "ALTER TABLE products ADD COLUMN last_listing_generated_at DATETIME",
+        }
+        for col, sql in listing_migrations.items():
+            if col not in cols:
+                conn.execute(text(sql))
 
     if "orders" not in insp.get_table_names():
         return
