@@ -4,6 +4,7 @@ from typing import Optional, Any
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from app.services.pricing import calc_gross_profit, calc_markup_percent, calc_margin_percent
+from app.services.decision_service import evaluate_product_decision
 
 
 # ---------- Supplier ----------
@@ -88,14 +89,24 @@ class ProductOut(ProductBase):
     created_at: datetime
     gross_profit: float = 0
     margin_percent: float = 0
+    decision_status: str = "bad"
+    decision_score: float = 0
+    decision_reason: str = ""
 
     @model_validator(mode="after")
     def compute_profit_fields(self):
         cost = self.cost_price or 0
         sell = self.selling_price or 0
+        stock = self.stock_quantity or 0
         self.gross_profit = calc_gross_profit(cost, sell)
         self.markup_percent = calc_markup_percent(cost, sell)
         self.margin_percent = calc_margin_percent(cost, sell)
+        status, score, reason = evaluate_product_decision(
+            cost, sell, stock, self.markup_percent
+        )
+        self.decision_status = status
+        self.decision_score = score
+        self.decision_reason = reason
         return self
 
 
@@ -145,6 +156,9 @@ class ProductImportCommitResponse(BaseModel):
     updated_count: int
     skipped_count: int
     error_count: int
+    good_count: int = 0
+    risk_count: int = 0
+    bad_count: int = 0
     product_ids: list[str]
     rows: list[ProductImportCommitDetailRow]
 
@@ -252,6 +266,32 @@ class ProfitAnalytics(BaseModel):
     average_margin_percent: float
     top_profit_products: list[dict[str, Any]]
     low_margin_products: list[dict[str, Any]]
+
+
+class AnalyticsSummary(BaseModel):
+    total_products: int
+    good_products: int
+    risk_products: int
+    bad_products: int
+    total_potential_profit: float
+    average_margin_percent: float
+    average_markup_percent: float
+    top_products_by_profit: list[dict[str, Any]]
+    top_products_by_margin: list[dict[str, Any]]
+    low_margin_products: list[dict[str, Any]]
+    out_of_stock_products: list[dict[str, Any]]
+
+
+class SupplierAnalyticsItem(BaseModel):
+    supplier_id: str
+    supplier_name: str
+    products_count: int
+    good_count: int
+    risk_count: int
+    bad_count: int
+    average_margin_percent: float
+    total_potential_profit: float
+    supplier_score: float
 
 
 class RecommendationsResponse(BaseModel):

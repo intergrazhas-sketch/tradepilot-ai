@@ -30,6 +30,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 import type {
   Supplier, Product, Order, DashboardSummary, ProfitAnalytics,
   Channel, PlatformSettings, ImportPreviewResponse, ImportPreviewRow, ImportCommitResponse,
+  AnalyticsSummary, SupplierAnalyticsItem,
 } from "@/types";
 
 export const api = {
@@ -108,6 +109,8 @@ export const api = {
     request<Order>(`/api/v1/orders/${id}`, { method: "PUT", body: JSON.stringify(data) }),
 
   // Analytics
+  analyticsSummary: () => request<AnalyticsSummary>("/api/v1/analytics/summary"),
+  supplierAnalytics: () => request<SupplierAnalyticsItem[]>("/api/v1/analytics/suppliers"),
   profitAnalytics: () => request<ProfitAnalytics>("/api/v1/analytics/profit"),
   recommendations: () => request<{ recommendations: string[] }>("/api/v1/analytics/recommendations"),
 

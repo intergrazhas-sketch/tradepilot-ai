@@ -124,6 +124,16 @@ export default function ImportPage() {
             <div><span className="text-ink-500">{t("import.skipped")}:</span> <strong>{result.skipped_count}</strong></div>
             <div><span className="text-ink-500">{t("import.errors")}:</span> <strong>{result.error_count}</strong></div>
           </div>
+          {(result.good_count > 0 || result.risk_count > 0 || result.bad_count > 0) && (
+            <div className="mt-4 pt-3 border-t border-profit-500/20">
+              <p className="text-xs text-ink-600 mb-2">{t("import.decisionHint")}</p>
+              <div className="grid grid-cols-3 gap-3 text-sm">
+                <div><span className="text-profit-500">{t("import.goodProducts")}:</span> <strong>{result.good_count}</strong></div>
+                <div><span className="text-warn-500">{t("import.riskProducts")}:</span> <strong>{result.risk_count}</strong></div>
+                <div><span className="text-danger-500">{t("import.badProducts")}:</span> <strong>{result.bad_count}</strong></div>
+              </div>
+            </div>
+          )}
         </Card>
       )}
 

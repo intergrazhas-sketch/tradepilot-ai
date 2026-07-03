@@ -2,11 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { PageShell } from "@/components/PageShell";
-import { Card, Button, Input, Select, StatusBadge, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
+import { Card, Button, Input, Select, StatusBadge, DecisionBadge, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
 import type { Product, Supplier } from "@/types";
+
+type DecisionFilter = "" | "good" | "risk" | "bad";
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -16,6 +18,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [supplierFilter, setSupplierFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [decisionFilter, setDecisionFilter] = useState<DecisionFilter>("");
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = () => {
@@ -36,6 +39,7 @@ export default function ProductsPage() {
     return products.filter((p) => {
       if (supplierFilter && p.supplier_id !== supplierFilter) return false;
       if (categoryFilter && p.category !== categoryFilter) return false;
+      if (decisionFilter && p.decision_status !== decisionFilter) return false;
       if (search) {
         const q = search.toLowerCase();
         const hay = `${p.name_ai || p.name_raw} ${p.sku || ""}`.toLowerCase();
@@ -43,7 +47,7 @@ export default function ProductsPage() {
       }
       return true;
     });
-  }, [products, supplierFilter, categoryFilter, search]);
+  }, [products, supplierFilter, categoryFilter, decisionFilter, search]);
 
   const supplierName = (id?: string | null) => suppliers.find((s) => s.id === id)?.name || "—";
 
@@ -51,6 +55,13 @@ export default function ProductsPage() {
     if (gross > 0) return { tone: "text-profit-500", label: t("products.profitPositive") };
     if (gross < 0) return { tone: "text-danger-500", label: t("products.profitNegative") };
     return { tone: "text-ink-500", label: t("products.profitZero") };
+  };
+
+  const decisionLabel = (status: string) => {
+    if (status === "good") return t("decision.good");
+    if (status === "risk") return t("decision.risk");
+    if (status === "bad") return t("decision.bad");
+    return status;
   };
 
   const aiImprove = async (id: string) => {
@@ -77,11 +88,22 @@ export default function ProductsPage() {
     }
   };
 
+  const filterBtn = (value: DecisionFilter, label: string) => (
+    <Button
+      key={value || "all"}
+      variant={decisionFilter === value ? "primary" : "secondary"}
+      className="!px-3 !py-1.5 text-xs"
+      onClick={() => setDecisionFilter(value)}
+    >
+      {label}
+    </Button>
+  );
+
   return (
     <PageShell title={t("products.title")} subtitle={t("products.subtitle")}>
       {error && <ErrorBanner message={error} />}
 
-      <div className="flex flex-wrap gap-3 mb-4">
+      <div className="flex flex-wrap gap-3 mb-3">
         <Input
           placeholder={t("common.search")}
           value={search}
@@ -98,23 +120,31 @@ export default function ProductsPage() {
         </Select>
       </div>
 
+      <div className="flex flex-wrap gap-2 mb-4">
+        {filterBtn("", t("decision.filterAll"))}
+        {filterBtn("good", t("decision.filterGood"))}
+        {filterBtn("risk", t("decision.filterRisk"))}
+        {filterBtn("bad", t("decision.filterBad"))}
+      </div>
+
       {!products && !error && <Spinner />}
       {products && filtered.length === 0 && <Card><EmptyState title={t("common.empty")} /></Card>}
 
       {products && filtered.length > 0 && (
         <Card className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[1100px]">
+          <table className="w-full text-sm min-w-[1280px]">
             <thead>
               <tr className="border-b border-line text-left text-xs text-ink-500">
                 <th className="px-4 py-3 font-medium">{t("products.name")}</th>
+                <th className="px-4 py-3 font-medium">{t("decision.reason")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.supplier")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.cost")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.price")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.profit")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.markup")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.margin")}</th>
+                <th className="px-4 py-3 font-medium">{t("decision.score")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.stock")}</th>
-                <th className="px-4 py-3 font-medium">{t("common.status")}</th>
                 <th className="px-4 py-3 font-medium w-[172px]">{t("common.actions")}</th>
               </tr>
             </thead>
@@ -126,8 +156,10 @@ export default function ProductsPage() {
                 <tr key={p.id} className="border-b border-line last:border-0 hover:bg-canvas/50 align-top">
                   <td className="px-4 py-3">
                     <div className="font-medium text-ink-900">{p.name_ai || p.name_raw}</div>
-                    <div className="text-xs text-ink-500">{p.sku || "—"} · {p.category || "Без категории"}</div>
+                    <div className="text-xs text-ink-500 mb-1.5">{p.sku || "—"} · {p.category || "Без категории"}</div>
+                    <DecisionBadge status={p.decision_status} label={decisionLabel(p.decision_status)} />
                   </td>
+                  <td className="px-4 py-3 text-xs text-ink-600 max-w-[180px]">{p.decision_reason || "—"}</td>
                   <td className="px-4 py-3 text-ink-700">{supplierName(p.supplier_id)}</td>
                   <td className="px-4 py-3 text-ink-700">{formatMoney(p.cost_price, p.currency)}</td>
                   <td className="px-4 py-3 font-medium text-ink-900">{formatMoney(p.selling_price, p.currency)}</td>
@@ -137,12 +169,12 @@ export default function ProductsPage() {
                   </td>
                   <td className="px-4 py-3 text-ink-700">{formatPercent(p.markup_percent ?? 0)}</td>
                   <td className="px-4 py-3 text-ink-700">{formatPercent(p.margin_percent ?? 0)}</td>
+                  <td className="px-4 py-3 font-medium text-ink-900">{Math.round(p.decision_score ?? 0)}</td>
                   <td className="px-4 py-3">
-                    <span className={p.stock_quantity <= 5 ? "text-warn-500 font-medium" : "text-ink-700"}>
+                    <span className={p.stock_quantity <= 0 ? "text-danger-500 font-medium" : p.stock_quantity <= 5 ? "text-warn-500 font-medium" : "text-ink-700"}>
                       {p.stock_quantity}
                     </span>
                   </td>
-                  <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
                   <td className="px-4 py-3 w-[172px]">
                     <div className="flex flex-col gap-2 min-w-[156px]">
                       <Button

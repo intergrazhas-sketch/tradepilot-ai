@@ -5,21 +5,28 @@ import { PageShell } from "@/components/PageShell";
 import { Card, Button, Modal, Input, Textarea, StatusBadge, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
-import type { Supplier } from "@/types";
+import { formatMoney, formatPercent } from "@/lib/format";
+import type { Supplier, SupplierAnalyticsItem } from "@/types";
 
 const EMPTY_FORM = { name: "", contact_name: "", phone: "", email: "", country: "", city: "", notes: "" };
 
 export default function SuppliersPage() {
   const { t } = useI18n();
   const [suppliers, setSuppliers] = useState<Supplier[] | null>(null);
+  const [analytics, setAnalytics] = useState<SupplierAnalyticsItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
 
-  const load = () => api.listSuppliers().then(setSuppliers).catch((e) => setError(e.message));
+  const load = () => {
+    api.listSuppliers().then(setSuppliers).catch((e) => setError(e.message));
+    api.supplierAnalytics().then(setAnalytics).catch(() => {});
+  };
 
   useEffect(() => { load(); }, []);
+
+  const statsFor = (id: string) => analytics.find((a) => a.supplier_id === id);
 
   const submit = async () => {
     if (!form.name.trim()) return;
@@ -50,27 +57,39 @@ export default function SuppliersPage() {
       )}
 
       {suppliers && suppliers.length > 0 && (
-        <Card className="overflow-hidden">
-          <table className="w-full text-sm">
+        <Card className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[1100px]">
             <thead>
               <tr className="border-b border-line text-left text-xs text-ink-500">
                 <th className="px-4 py-3 font-medium">{t("suppliers.name")}</th>
                 <th className="px-4 py-3 font-medium">{t("suppliers.contact")}</th>
-                <th className="px-4 py-3 font-medium">{t("suppliers.phone")}</th>
-                <th className="px-4 py-3 font-medium">{t("suppliers.city")}</th>
+                <th className="px-4 py-3 font-medium">{t("suppliers.productsCount")}</th>
+                <th className="px-4 py-3 font-medium">{t("suppliers.goodCount")}</th>
+                <th className="px-4 py-3 font-medium">{t("suppliers.riskCount")}</th>
+                <th className="px-4 py-3 font-medium">{t("suppliers.badCount")}</th>
+                <th className="px-4 py-3 font-medium">{t("suppliers.avgMargin")}</th>
+                <th className="px-4 py-3 font-medium">{t("suppliers.potentialProfit")}</th>
+                <th className="px-4 py-3 font-medium">{t("decision.supplierScore")}</th>
                 <th className="px-4 py-3 font-medium">{t("common.status")}</th>
               </tr>
             </thead>
             <tbody>
-              {suppliers.map((s) => (
+              {suppliers.map((s) => {
+                const st = statsFor(s.id);
+                return (
                 <tr key={s.id} className="border-b border-line last:border-0 hover:bg-canvas/50">
                   <td className="px-4 py-3 font-medium text-ink-900">{s.name}</td>
                   <td className="px-4 py-3 text-ink-700">{s.contact_name || "—"}</td>
-                  <td className="px-4 py-3 text-ink-700">{s.phone || "—"}</td>
-                  <td className="px-4 py-3 text-ink-700">{s.city || "—"}</td>
+                  <td className="px-4 py-3 text-ink-700">{st?.products_count ?? 0}</td>
+                  <td className="px-4 py-3 text-profit-500 font-medium">{st?.good_count ?? 0}</td>
+                  <td className="px-4 py-3 text-warn-500 font-medium">{st?.risk_count ?? 0}</td>
+                  <td className="px-4 py-3 text-danger-500 font-medium">{st?.bad_count ?? 0}</td>
+                  <td className="px-4 py-3 text-ink-700">{st ? formatPercent(st.average_margin_percent) : "—"}</td>
+                  <td className="px-4 py-3 text-ink-700">{st ? formatMoney(st.total_potential_profit) : "—"}</td>
+                  <td className="px-4 py-3 font-semibold text-ink-900">{st ? Math.round(st.supplier_score) : "—"}</td>
                   <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
                 </tr>
-              ))}
+              );})}
             </tbody>
           </table>
         </Card>

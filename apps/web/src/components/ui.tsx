@@ -62,7 +62,29 @@ const STATUS_LABELS_RU: Record<string, string> = {
   not_connected: "Не подключен",
   planned: "Запланирован",
   connected: "Подключен",
+
+  good: "Хороший",
+  risk: "Риск",
+  bad: "Плохой",
 };
+
+export function DecisionBadge({ status, label }: { status: string; label?: string }) {
+  const styles: Record<string, string> = {
+    good: "bg-profit-50 text-profit-500",
+    risk: "bg-warn-50 text-warn-500",
+    bad: "bg-danger-50 text-danger-500",
+  };
+  const fallback: Record<string, string> = {
+    good: STATUS_LABELS_RU.good,
+    risk: STATUS_LABELS_RU.risk,
+    bad: STATUS_LABELS_RU.bad,
+  };
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] || "bg-ink-300/20 text-ink-500"}`}>
+      {label || fallback[status] || status}
+    </span>
+  );
+}
 
 export function StatusBadge({ status }: { status: string }) {
   const style = STATUS_STYLES[status] || "bg-ink-300/20 text-ink-500";

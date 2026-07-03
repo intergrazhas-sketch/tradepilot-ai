@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app import models, schemas
 from app.config import get_settings
 from app.services.pricing import price_from_markup
+from app.services.decision_service import evaluate_product_decision
 
 settings = get_settings()
 
@@ -247,11 +248,33 @@ def commit_import(
             )
 
     db.commit()
+
+    good_count = risk_count = bad_count = 0
+    for pid in product_ids:
+        product = db.query(models.Product).filter(models.Product.id == pid).first()
+        if not product:
+            continue
+        status, _, _ = evaluate_product_decision(
+            product.cost_price,
+            product.selling_price,
+            product.stock_quantity or 0,
+            product.markup_percent,
+        )
+        if status == "good":
+            good_count += 1
+        elif status == "risk":
+            risk_count += 1
+        else:
+            bad_count += 1
+
     return schemas.ProductImportCommitResponse(
         added_count=added_count,
         updated_count=updated_count,
         skipped_count=skipped_count,
         error_count=error_count,
+        good_count=good_count,
+        risk_count=risk_count,
+        bad_count=bad_count,
         product_ids=product_ids,
         rows=details,
     )

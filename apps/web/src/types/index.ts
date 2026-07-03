@@ -26,6 +26,9 @@ export interface Product {
   markup_percent: number;
   margin_percent: number;
   gross_profit: number;
+  decision_status: "good" | "risk" | "bad";
+  decision_score: number;
+  decision_reason: string;
   stock_quantity: number;
   currency: string;
   status: string;
@@ -132,8 +135,52 @@ export interface ImportCommitResponse {
   updated_count: number;
   skipped_count: number;
   error_count: number;
+  good_count: number;
+  risk_count: number;
+  bad_count: number;
   product_ids: string[];
   rows: ImportCommitDetailRow[];
+}
+
+export interface AnalyticsProductSnapshot {
+  id: string;
+  name: string;
+  sku?: string | null;
+  cost_price: number;
+  selling_price: number;
+  gross_profit: number;
+  margin_percent: number;
+  markup_percent: number;
+  stock_quantity: number;
+  decision_status: "good" | "risk" | "bad";
+  decision_score: number;
+  decision_reason: string;
+}
+
+export interface AnalyticsSummary {
+  total_products: number;
+  good_products: number;
+  risk_products: number;
+  bad_products: number;
+  total_potential_profit: number;
+  average_margin_percent: number;
+  average_markup_percent: number;
+  top_products_by_profit: AnalyticsProductSnapshot[];
+  top_products_by_margin: AnalyticsProductSnapshot[];
+  low_margin_products: AnalyticsProductSnapshot[];
+  out_of_stock_products: AnalyticsProductSnapshot[];
+}
+
+export interface SupplierAnalyticsItem {
+  supplier_id: string;
+  supplier_name: string;
+  products_count: number;
+  good_count: number;
+  risk_count: number;
+  bad_count: number;
+  average_margin_percent: number;
+  total_potential_profit: number;
+  supplier_score: number;
 }
 
 export const ORDER_STATUSES = [

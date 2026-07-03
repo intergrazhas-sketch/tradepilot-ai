@@ -2,20 +2,33 @@
 
 import { useEffect, useState } from "react";
 import { PageShell } from "@/components/PageShell";
-import { Card, StatCard, StatusBadge, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
+import { Card, StatCard, StatusBadge, DecisionBadge, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
-import { formatMoney, formatDate } from "@/lib/format";
-import type { DashboardSummary } from "@/types";
+import { formatMoney, formatDate, formatPercent } from "@/lib/format";
+import type { DashboardSummary, AnalyticsSummary } from "@/types";
 
 export default function DashboardPage() {
   const { t } = useI18n();
   const [data, setData] = useState<DashboardSummary | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.dashboardSummary().then(setData).catch((e) => setError(e.message));
+    Promise.all([api.dashboardSummary(), api.analyticsSummary()])
+      .then(([summary, stats]) => {
+        setData(summary);
+        setAnalytics(stats);
+      })
+      .catch((e) => setError(e.message));
   }, []);
+
+  const decisionLabel = (status: string) => {
+    if (status === "good") return t("decision.good");
+    if (status === "risk") return t("decision.risk");
+    if (status === "bad") return t("decision.bad");
+    return status;
+  };
 
   return (
     <PageShell title={t("dashboard.title")} subtitle={t("dashboard.subtitle")}>
@@ -34,6 +47,36 @@ export default function DashboardPage() {
             <StatCard label={t("dashboard.avgMargin")} value={`${data.average_margin_percent}%`} />
             <StatCard label={t("dashboard.lowStock")} value={String(data.low_stock_products)} accent={data.low_stock_products > 0 ? "warn" : "default"} />
           </div>
+
+          {analytics && (
+            <Card className="p-5">
+              <h3 className="font-semibold text-ink-900 mb-4">{t("dashboard.decisionBlock")}</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-5">
+                <StatCard label={t("dashboard.goodProducts")} value={String(analytics.good_products)} accent="profit" />
+                <StatCard label={t("dashboard.riskProducts")} value={String(analytics.risk_products)} accent="warn" />
+                <StatCard label={t("dashboard.badProducts")} value={String(analytics.bad_products)} />
+                <StatCard label={t("dashboard.avgMargin")} value={formatPercent(analytics.average_margin_percent)} />
+                <StatCard label={t("dashboard.potentialProfit")} value={formatMoney(analytics.total_potential_profit)} accent="profit" />
+                <StatCard label={t("products.markup")} value={formatPercent(analytics.average_markup_percent)} />
+              </div>
+              <h4 className="text-sm font-medium text-ink-700 mb-3">{t("dashboard.topProducts")}</h4>
+              {analytics.top_products_by_profit.length === 0 ? (
+                <EmptyState title={t("common.empty")} />
+              ) : (
+                <div className="divide-y divide-line">
+                  {analytics.top_products_by_profit.slice(0, 5).map((p) => (
+                    <div key={p.id} className="flex items-center justify-between py-2.5 gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-ink-900 truncate">{p.name}</div>
+                        <div className="text-xs text-ink-500">{formatMoney(p.gross_profit)} · {formatPercent(p.margin_percent)}</div>
+                      </div>
+                      <DecisionBadge status={p.decision_status} label={decisionLabel(p.decision_status)} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2 p-5">
