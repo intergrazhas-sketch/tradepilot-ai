@@ -473,6 +473,44 @@ class SupplierSearchSummary(BaseModel):
     high_fit_leads: int
 
 
+class SupplierSearchProviderStatus(BaseModel):
+    configured: bool
+    provider: str
+    message: str
+
+
+class SupplierSearchWebResultOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    search_request_id: str
+    title: str
+    url: str
+    snippet: Optional[str] = None
+    source: str
+    query: str
+    rank: int
+    extracted_name: Optional[str] = None
+    possible_price_list: bool
+    possible_wholesale: bool
+    possible_contacts: bool
+    result_score: int
+    converted_lead_id: Optional[str] = None
+    created_at: datetime
+
+
+class SupplierSearchLiveRunResponse(BaseModel):
+    configured: bool
+    provider: str
+    message: str
+    queries_run: int
+    results: list[SupplierSearchWebResultOut]
+
+
+class SupplierSearchConvertResultResponse(BaseModel):
+    result: SupplierSearchWebResultOut
+    lead: SupplierLeadOut
+
+
 # ---------- Trend Products ----------
 
 class TrendProductLeadBase(BaseModel):

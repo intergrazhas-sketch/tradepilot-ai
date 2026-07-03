@@ -6,7 +6,7 @@ import { PageShell } from "@/components/PageShell";
 import { Card, Button, Modal, Input, Textarea, Select, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
-import type { SupplierSearchRequest, SupplierLead } from "@/types";
+import type { SupplierSearchRequest, SupplierLead, SupplierSearchProviderStatus, SupplierSearchWebResult } from "@/types";
 
 const EMPTY_REQUEST = {
   category: "",
@@ -46,8 +46,19 @@ export default function SupplierSearchPage() {
   const [busy, setBusy] = useState(false);
   const [lastLead, setLastLead] = useState<SupplierLead | null>(null);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [providerStatus, setProviderStatus] = useState<SupplierSearchProviderStatus | null>(null);
+  const [webResults, setWebResults] = useState<SupplierSearchWebResult[]>([]);
+  const [liveMessage, setLiveMessage] = useState<string | null>(null);
+  const [liveBusy, setLiveBusy] = useState(false);
+  const [convertBusyId, setConvertBusyId] = useState<string | null>(null);
 
   const selected = requests?.find((r) => r.id === selectedId) ?? null;
+
+  const loadWebResults = useCallback((requestId: string) => {
+    api.listSupplierSearchWebResults(requestId)
+      .then(setWebResults)
+      .catch((e) => setError(e.message));
+  }, []);
 
   const load = useCallback(() => {
     api.listSupplierSearchRequests()
@@ -59,6 +70,19 @@ export default function SupplierSearchPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    api.supplierSearchProviderStatus().then(setProviderStatus).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (selectedId) {
+      loadWebResults(selectedId);
+      setLiveMessage(null);
+    } else {
+      setWebResults([]);
+    }
+  }, [selectedId, loadWebResults]);
 
   const createRequest = async () => {
     if (!form.category.trim()) return;
@@ -107,6 +131,38 @@ export default function SupplierSearchPage() {
       setTimeout(() => setCopiedIdx(null), 1500);
     } catch {
       setError(t("supplierSearch.copyFailed"));
+    }
+  };
+
+  const runLiveSearch = async () => {
+    if (!selected) return;
+    setLiveBusy(true);
+    setError(null);
+    try {
+      const res = await api.runSupplierLiveSearch(selected.id);
+      setLiveMessage(res.message);
+      setWebResults(res.results);
+      if (res.configured && res.queries_run > 0) {
+        load();
+      }
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLiveBusy(false);
+    }
+  };
+
+  const convertResult = async (resultId: string) => {
+    setConvertBusyId(resultId);
+    setError(null);
+    try {
+      const res = await api.convertSearchResultToLead(resultId);
+      setLastLead(res.lead);
+      if (selectedId) loadWebResults(selectedId);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setConvertBusyId(null);
     }
   };
 
@@ -310,6 +366,85 @@ export default function SupplierSearchPage() {
                       >
                         {copiedIdx === idx ? t("supplierSearch.copied") : t("supplierSearch.copyQuery")}
                       </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          )}
+
+          {selected && (
+            <Card className="p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                <div>
+                  <h3 className="font-semibold text-ink-900">{t("supplierSearch.liveSearchTitle")}</h3>
+                  <p className="text-xs text-ink-500 mt-1">
+                    {providerStatus
+                      ? (providerStatus.configured
+                        ? `${t("supplierSearch.providerReady")}: ${providerStatus.provider}`
+                        : t("supplierSearch.providerNotConfigured"))
+                      : t("common.loading")}
+                  </p>
+                  {providerStatus && !providerStatus.configured && (
+                    <p className="text-xs text-warn-600 mt-1">{providerStatus.message}</p>
+                  )}
+                  {liveMessage && (
+                    <p className="text-xs text-ink-600 mt-1">{liveMessage}</p>
+                  )}
+                </div>
+                <Button
+                  onClick={runLiveSearch}
+                  disabled={liveBusy || !providerStatus?.configured}
+                >
+                  {liveBusy ? t("common.loading") : t("supplierSearch.runLiveSearch")}
+                </Button>
+              </div>
+
+              {webResults.length === 0 ? (
+                <EmptyState
+                  title={t("supplierSearch.noLiveResults")}
+                  hint={providerStatus?.configured ? t("supplierSearch.noLiveResultsHint") : t("supplierSearch.providerSetupHint")}
+                />
+              ) : (
+                <div className="space-y-3">
+                  {webResults.map((r) => (
+                    <div key={r.id} className="p-3 rounded-lg border border-line bg-canvas/40">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-brand-600 hover:underline">
+                          {r.title}
+                        </a>
+                        <span className={`text-sm font-bold shrink-0 ${r.result_score >= 70 ? "text-profit-500" : r.result_score >= 40 ? "text-warn-500" : "text-ink-500"}`}>
+                          {r.result_score}
+                        </span>
+                      </div>
+                      <p className="text-xs text-ink-500 mb-1">{t("supplierSearch.queryLabel")}: {r.query}</p>
+                      {r.snippet && <p className="text-xs text-ink-600 mb-2 line-clamp-3">{r.snippet}</p>}
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {r.possible_price_list && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-profit-50 text-profit-600">{t("supplierDiscovery.openPrice")}</span>
+                        )}
+                        {r.possible_wholesale && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-50 text-brand-600">{t("supplierDiscovery.wholesale")}</span>
+                        )}
+                        {r.possible_contacts && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-canvas text-ink-600">{t("supplierSearch.possibleContacts")}</span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {r.converted_lead_id ? (
+                          <Link href="/supplier-discovery" className="text-xs text-brand-600 hover:underline self-center">
+                            {t("supplierSearch.leadCreated")}
+                          </Link>
+                        ) : (
+                          <Button
+                            className="text-xs px-2 py-1 h-auto"
+                            disabled={convertBusyId === r.id}
+                            onClick={() => convertResult(r.id)}
+                          >
+                            {t("supplierSearch.createLead")}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     DEFAULT_MIN_MARGIN_PERCENT: float = 15.0
     DEFAULT_CURRENCY: str = "KZT"
 
+    # Supplier web search providers (SerpAPI / Bing). Default disabled — no fake results.
+    SUPPLIER_SEARCH_PROVIDER: str = "disabled"
+    SERPAPI_API_KEY: str | None = None
+    BING_SEARCH_API_KEY: str | None = None
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]

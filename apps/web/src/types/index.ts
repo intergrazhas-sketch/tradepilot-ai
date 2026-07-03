@@ -324,3 +324,35 @@ export interface SupplierSearchResultCreate {
   min_order_quantity?: number;
   notes?: string;
 }
+
+export interface SupplierSearchProviderStatus {
+  configured: boolean;
+  provider: string;
+  message: string;
+}
+
+export interface SupplierSearchWebResult {
+  id: string;
+  search_request_id: string;
+  title: string;
+  url: string;
+  snippet?: string | null;
+  source: string;
+  query: string;
+  rank: number;
+  extracted_name?: string | null;
+  possible_price_list: boolean;
+  possible_wholesale: boolean;
+  possible_contacts: boolean;
+  result_score: number;
+  converted_lead_id?: string | null;
+  created_at: string;
+}
+
+export interface SupplierSearchLiveRunResponse {
+  configured: boolean;
+  provider: string;
+  message: string;
+  queries_run: number;
+  results: SupplierSearchWebResult[];
+}

@@ -201,6 +201,30 @@ class SupplierSearchRequest(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     leads = relationship("SupplierLead", back_populates="search_request")
+    web_results = relationship("SupplierSearchResult", back_populates="search_request")
+
+
+class SupplierSearchResult(Base):
+    __tablename__ = "supplier_search_results"
+
+    id = Column(String, primary_key=True, default=gen_id)
+    search_request_id = Column(String, ForeignKey("supplier_search_requests.id"), nullable=False)
+    title = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    snippet = Column(Text, nullable=True)
+    source = Column(String, default="serpapi")
+    query = Column(String, nullable=False)
+    rank = Column(Integer, default=1)
+    extracted_name = Column(String, nullable=True)
+    possible_price_list = Column(Boolean, default=False)
+    possible_wholesale = Column(Boolean, default=False)
+    possible_contacts = Column(Boolean, default=False)
+    result_score = Column(Integer, default=0)
+    converted_lead_id = Column(String, ForeignKey("supplier_leads.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    search_request = relationship("SupplierSearchRequest", back_populates="web_results")
+    converted_lead = relationship("SupplierLead", foreign_keys=[converted_lead_id])
 
 
 class TrendProductLead(Base):

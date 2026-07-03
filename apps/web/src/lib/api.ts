@@ -33,6 +33,7 @@ import type {
   AnalyticsSummary, SupplierAnalyticsItem, WorkflowHints,
   SupplierLead, SupplierDiscoverySummary, TrendProductLead, SupplierLeadFilter,
   SupplierSearchRequest, SupplierSearchSummary, SupplierSearchResultCreate,
+  SupplierSearchProviderStatus, SupplierSearchWebResult, SupplierSearchLiveRunResponse,
 } from "@/types";
 
 export const api = {
@@ -169,6 +170,20 @@ export const api = {
     request<{ lead: SupplierLead; request: SupplierSearchRequest }>(
       `/api/v1/supplier-search/requests/${id}/add-result-as-lead`,
       { method: "POST", body: JSON.stringify(data) },
+    ),
+  supplierSearchProviderStatus: () =>
+    request<SupplierSearchProviderStatus>("/api/v1/supplier-search/provider/status"),
+  listSupplierSearchWebResults: (requestId: string) =>
+    request<SupplierSearchWebResult[]>(`/api/v1/supplier-search/requests/${requestId}/results`),
+  runSupplierLiveSearch: (requestId: string) =>
+    request<SupplierSearchLiveRunResponse>(
+      `/api/v1/supplier-search/requests/${requestId}/run-live-search`,
+      { method: "POST" },
+    ),
+  convertSearchResultToLead: (resultId: string) =>
+    request<{ result: SupplierSearchWebResult; lead: SupplierLead }>(
+      `/api/v1/supplier-search/results/${resultId}/convert-to-lead`,
+      { method: "POST" },
     ),
 
   // Trend Products

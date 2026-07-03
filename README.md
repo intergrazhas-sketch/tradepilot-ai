@@ -81,6 +81,15 @@ npm run dev
 
 Open http://localhost:3010 (fixed dev port — avoids conflicts with other Next.js projects on :3000).
 
+**If dev breaks after `npm run build`** (e.g. `Cannot find module './819.js'` — stale `.next` chunks):
+
+```bash
+cd apps/web
+npm run dev:clean
+```
+
+This removes `apps/web/.next` and starts the dev server on port 3010. Works on Windows (PowerShell) and macOS/Linux.
+
 ## What works in this MVP
 
 Ordered by the team's current priority (internal trading tool, not a public SaaS yet):
