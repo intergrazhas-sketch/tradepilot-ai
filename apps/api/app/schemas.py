@@ -219,6 +219,7 @@ class OrderOut(BaseModel):
     product_id: Optional[str] = None
     supplier_id: Optional[str] = None
     product_name: Optional[str] = None
+    product_sku: Optional[str] = None
     supplier_name: Optional[str] = None
     quantity: int = 1
     customer_name: str = ""
@@ -241,10 +242,11 @@ class OrdersSummary(BaseModel):
     total_orders: int
     new_orders: int
     confirmed_orders: int
+    supplier_ordered_orders: int
     delivered_orders: int
     cancelled_orders: int
     total_revenue: float
-    total_cost: float
+    total_cost: float = 0
     total_profit: float
     average_margin_percent: float
 

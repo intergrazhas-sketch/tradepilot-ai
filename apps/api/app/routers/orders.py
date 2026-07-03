@@ -22,13 +22,30 @@ def _normalize_status(status: str) -> str:
 
 def _to_order_out(order: models.Order) -> schemas.OrderOut:
     product_name = None
+    product_sku = None
     supplier_name = None
+
     if order.product:
         product_name = order.product.name_ai or order.product.name_raw
+        product_sku = order.product.sku
+    elif order.items:
+        names = []
+        for item in order.items:
+            if item.product:
+                names.append(item.product.name_ai or item.product.name_raw)
+                if not product_sku and item.product.sku:
+                    product_sku = item.product.sku
+        if len(names) == 1:
+            product_name = names[0]
+        elif names:
+            product_name = names[0] + (f" (+{len(names) - 1})" if len(names) > 1 else "")
+
     if order.supplier:
         supplier_name = order.supplier.name
     elif order.product and order.product.supplier:
         supplier_name = order.product.supplier.name
+    elif order.items and order.items[0].product and order.items[0].product.supplier:
+        supplier_name = order.items[0].product.supplier.name
 
     gross = order.gross_profit or order.profit_amount
     margin = order.margin_percent
@@ -40,6 +57,7 @@ def _to_order_out(order: models.Order) -> schemas.OrderOut:
         product_id=order.product_id,
         supplier_id=order.supplier_id,
         product_name=product_name,
+        product_sku=product_sku,
         supplier_name=supplier_name,
         quantity=order.quantity or 1,
         customer_name=order.customer_name or "",
@@ -72,6 +90,7 @@ def orders_summary(db: Session = Depends(get_db)):
         total_orders=len(orders),
         new_orders=sum(1 for o in orders if _normalize_status(o.status) == "new"),
         confirmed_orders=sum(1 for o in orders if _normalize_status(o.status) == "confirmed"),
+        supplier_ordered_orders=sum(1 for o in orders if _normalize_status(o.status) == "supplier_ordered"),
         delivered_orders=sum(1 for o in orders if _normalize_status(o.status) == "delivered"),
         cancelled_orders=sum(1 for o in orders if _normalize_status(o.status) == "cancelled"),
         total_revenue=round(sum(o.total_amount or 0 for o in active), 2),
@@ -81,15 +100,30 @@ def orders_summary(db: Session = Depends(get_db)):
     )
 
 
-@router.get("", response_model=list[schemas.OrderOut])
-def list_orders(status: str | None = None, db: Session = Depends(get_db)):
-    query = (
+def _order_query(db: Session):
+    return (
         db.query(models.Order)
         .options(joinedload(models.Order.product).joinedload(models.Product.supplier))
         .options(joinedload(models.Order.supplier))
-        .options(joinedload(models.Order.items))
+        .options(joinedload(models.Order.items).joinedload(models.OrderItem.product).joinedload(models.Product.supplier))
     )
-    orders = query.order_by(models.Order.created_at.desc()).all()
+
+
+@router.get("", response_model=list[schemas.OrderOut])
+def list_orders(status: str | None = None, db: Session = Depends(get_db)):
+    if status:
+        normalized_filter = _normalize_status(status.strip())
+        if normalized_filter not in VALID_STATUSES:
+            raise HTTPException(
+                400,
+                detail={
+                    "message": f"Invalid status filter '{status}'.",
+                    "allowed_statuses": sorted(VALID_STATUSES),
+                },
+            )
+        status = normalized_filter
+
+    orders = _order_query(db).order_by(models.Order.created_at.desc()).all()
     if status:
         orders = [o for o in orders if _normalize_status(o.status) == status]
     return [_to_order_out(o) for o in orders]
@@ -140,14 +174,7 @@ def create_order(payload: schemas.ManualOrderCreate, db: Session = Depends(get_d
 
     db.commit()
     db.refresh(order)
-    order = (
-        db.query(models.Order)
-        .options(joinedload(models.Order.product).joinedload(models.Product.supplier))
-        .options(joinedload(models.Order.supplier))
-        .options(joinedload(models.Order.items))
-        .filter(models.Order.id == order.id)
-        .first()
-    )
+    order = _order_query(db).filter(models.Order.id == order.id).first()
     return _to_order_out(order)
 
 
@@ -157,21 +184,21 @@ def update_order_status(
     payload: schemas.OrderStatusUpdate,
     db: Session = Depends(get_db),
 ):
-    if payload.status not in VALID_STATUSES:
-        raise HTTPException(400, f"Invalid status. Allowed: {sorted(VALID_STATUSES)}")
+    new_status = _normalize_status(payload.status.strip())
+    if new_status not in VALID_STATUSES:
+        raise HTTPException(
+            400,
+            detail={
+                "message": f"Invalid status '{payload.status}'.",
+                "allowed_statuses": sorted(VALID_STATUSES),
+            },
+        )
 
-    order = (
-        db.query(models.Order)
-        .options(joinedload(models.Order.product).joinedload(models.Product.supplier))
-        .options(joinedload(models.Order.supplier))
-        .options(joinedload(models.Order.items))
-        .filter(models.Order.id == order_id)
-        .first()
-    )
+    order = _order_query(db).filter(models.Order.id == order_id).first()
     if not order:
-        raise HTTPException(404, "Order not found")
+        raise HTTPException(404, detail={"message": "Order not found"})
 
-    order.status = payload.status
+    order.status = new_status
     db.commit()
     db.refresh(order)
     return _to_order_out(order)
@@ -179,37 +206,29 @@ def update_order_status(
 
 @router.get("/{order_id}", response_model=schemas.OrderOut)
 def get_order(order_id: str, db: Session = Depends(get_db)):
-    order = (
-        db.query(models.Order)
-        .options(joinedload(models.Order.product).joinedload(models.Product.supplier))
-        .options(joinedload(models.Order.supplier))
-        .options(joinedload(models.Order.items))
-        .filter(models.Order.id == order_id)
-        .first()
-    )
+    order = _order_query(db).filter(models.Order.id == order_id).first()
     if not order:
-        raise HTTPException(404, "Order not found")
+        raise HTTPException(404, detail={"message": "Order not found"})
     return _to_order_out(order)
 
 
 @router.put("/{order_id}", response_model=schemas.OrderOut)
 def update_order(order_id: str, payload: schemas.OrderUpdate, db: Session = Depends(get_db)):
-    order = (
-        db.query(models.Order)
-        .options(joinedload(models.Order.product).joinedload(models.Product.supplier))
-        .options(joinedload(models.Order.supplier))
-        .options(joinedload(models.Order.items))
-        .filter(models.Order.id == order_id)
-        .first()
-    )
+    order = _order_query(db).filter(models.Order.id == order_id).first()
     if not order:
-        raise HTTPException(404, "Order not found")
+        raise HTTPException(404, detail={"message": "Order not found"})
 
     data = payload.model_dump(exclude_unset=True)
     if "status" in data:
         normalized = _normalize_status(data["status"])
         if normalized not in VALID_STATUSES:
-            raise HTTPException(400, f"Invalid status. Allowed: {sorted(VALID_STATUSES)}")
+            raise HTTPException(
+                400,
+                detail={
+                    "message": f"Invalid status '{data['status']}'.",
+                    "allowed_statuses": sorted(VALID_STATUSES),
+                },
+            )
         data["status"] = normalized
 
     for field, value in data.items():

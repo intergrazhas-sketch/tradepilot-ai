@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { PageShell } from "@/components/PageShell";
 import { Card, Button, Input, Modal, Spinner, EmptyState, ErrorBanner, DecisionBadge } from "@/components/ui";
@@ -180,7 +181,10 @@ export default function StorefrontPage() {
           <div className="text-center py-4">
             <div className="text-profit-500 font-medium mb-2">{t("storefront.orderCreated")}</div>
             <p className="text-sm text-ink-500 mb-4">{t("storefront.orderCreatedHint")}</p>
-            <Button onClick={() => setOrderProduct(null)}>{t("common.close")}</Button>
+            <div className="flex justify-center gap-2">
+              <Link href="/orders"><Button>{t("storefront.goToOrders")}</Button></Link>
+              <Button variant="secondary" onClick={() => setOrderProduct(null)}>{t("common.close")}</Button>
+            </div>
           </div>
         )}
       </Modal>

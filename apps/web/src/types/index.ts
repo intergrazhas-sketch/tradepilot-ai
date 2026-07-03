@@ -51,6 +51,7 @@ export interface Order {
   product_id?: string | null;
   supplier_id?: string | null;
   product_name?: string | null;
+  product_sku?: string | null;
   supplier_name?: string | null;
   quantity: number;
   customer_name: string;
@@ -73,10 +74,11 @@ export interface OrdersSummary {
   total_orders: number;
   new_orders: number;
   confirmed_orders: number;
+  supplier_ordered_orders: number;
   delivered_orders: number;
   cancelled_orders: number;
   total_revenue: number;
-  total_cost: number;
+  total_cost?: number;
   total_profit: number;
   average_margin_percent: number;
 }
