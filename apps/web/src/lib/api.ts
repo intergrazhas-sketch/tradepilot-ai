@@ -34,7 +34,7 @@ import type {
   SupplierLead, SupplierDiscoverySummary, TrendProductLead, SupplierLeadFilter,
   SupplierSearchRequest, SupplierSearchSummary, SupplierSearchResultCreate,
   SupplierSearchProviderStatus, SupplierSearchWebResult, SupplierSearchLiveRunResponse,
-  ProductListing, ListingSummary,
+  ProductListing, ListingSummary, TestLaunchSummary, TestLaunchProduct,
 } from "@/types";
 
 export const api = {
@@ -198,4 +198,40 @@ export const api = {
   listTrendProductLeads: () => request<TrendProductLead[]>("/api/v1/trend-products/leads"),
   createTrendProductLead: (data: Partial<TrendProductLead>) =>
     request<TrendProductLead>("/api/v1/trend-products/leads", { method: "POST", body: JSON.stringify(data) }),
+
+  // Test Launch
+  testLaunchCandidates: (status?: string) =>
+    request<TestLaunchProduct[]>(
+      `/api/v1/test-launch/candidates${status ? `?status=${encodeURIComponent(status)}` : ""}`,
+    ),
+  testLaunchSelect: (productId: string) =>
+    request<TestLaunchProduct>(`/api/v1/test-launch/products/${productId}/select`, { method: "POST" }),
+  testLaunchUpdateStatus: (productId: string, test_launch_status: TestLaunchProduct["test_launch_status"]) =>
+    request<TestLaunchProduct>(`/api/v1/test-launch/products/${productId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ test_launch_status }),
+    }),
+  testLaunchSummary: () => request<TestLaunchSummary>("/api/v1/test-launch/summary"),
+  testLaunchExportCsv: async () => {
+    const res = await fetch(`${API_BASE}/api/v1/test-launch/export-csv`, { cache: "no-store" });
+    if (!res.ok) {
+      let detail = res.statusText;
+      try {
+        const data = await res.json();
+        detail = data.detail || detail;
+      } catch {
+        // ignore
+      }
+      throw new Error(typeof detail === "string" ? detail : "Export failed");
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "tradepilot-test-launch.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  },
 };

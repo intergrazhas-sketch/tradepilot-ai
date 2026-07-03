@@ -68,6 +68,7 @@ class ProductBase(BaseModel):
     listing_score: int = 0
     listing_notes: Optional[str] = None
     last_listing_generated_at: Optional[datetime] = None
+    test_launch_status: str = "not_selected"
 
 
 class ProductCreate(ProductBase):
@@ -129,6 +130,19 @@ class ListingSummary(BaseModel):
     draft: int
 
 
+class TestLaunchStatusUpdate(BaseModel):
+    test_launch_status: str
+
+
+class TestLaunchSummary(BaseModel):
+    total_candidates: int
+    selected_count: int
+    in_progress_count: int
+    completed_count: int
+    total_expected_profit: float
+    average_margin_percent: float
+
+
 class ProductOut(ProductBase):
     model_config = ConfigDict(from_attributes=True)
     id: str
@@ -154,6 +168,10 @@ class ProductOut(ProductBase):
         self.decision_score = score
         self.decision_reason = reason
         return self
+
+
+class TestLaunchProductOut(ProductOut):
+    supplier_name: Optional[str] = None
 
 
 # ---------- Product Import ----------

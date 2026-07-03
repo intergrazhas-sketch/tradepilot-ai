@@ -42,6 +42,18 @@ export default function BestProductsPage() {
     }
   };
 
+  const setTestLaunch = async (id: string) => {
+    setBusyId(id);
+    try {
+      await api.testLaunchSelect(id);
+      load();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const testLabel = (s: string) => {
     if (s === "candidate") return t("testStatus.candidate");
     if (s === "testing") return t("testStatus.testing");
@@ -107,6 +119,9 @@ export default function BestProductsPage() {
                     <div className="flex flex-col gap-1.5">
                       <Button variant="secondary" className="!px-2 !py-1 text-xs" disabled={busyId === p.id} onClick={() => setListingProduct(p)}>
                         {t("listing.prepareCard")}
+                      </Button>
+                      <Button variant="secondary" className="!px-2 !py-1 text-xs" disabled={busyId === p.id} onClick={() => setTestLaunch(p.id)}>
+                        {t("testLaunch.addToLaunch")}
                       </Button>
                       <Button variant="secondary" className="!px-2 !py-1 text-xs" disabled={busyId === p.id} onClick={() => setTestStatus(p.id, "candidate")}>
                         {t("testStatus.markCandidate")}

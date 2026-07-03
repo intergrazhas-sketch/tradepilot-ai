@@ -15,6 +15,7 @@ export default function ListingReadyPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [listingProduct, setListingProduct] = useState<Product | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = () => {
     api.listListingReady().then(setProducts).catch((e) => setError(e.message));
@@ -24,6 +25,18 @@ export default function ListingReadyPage() {
   useEffect(() => { load(); }, []);
 
   const supplierName = (id?: string | null) => suppliers.find((s) => s.id === id)?.name || "—";
+
+  const setTestLaunch = async (id: string) => {
+    setBusyId(id);
+    try {
+      await api.testLaunchSelect(id);
+      load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   return (
     <PageShell title={t("listing.readyTitle")} subtitle={t("listing.readySubtitle")}>
@@ -61,9 +74,19 @@ export default function ListingReadyPage() {
                   <td className="px-4 py-3 font-semibold text-brand-600">{p.listing_score ?? 0}</td>
                   <td className="px-4 py-3">{listingStatusLabel(t, p.listing_status)}</td>
                   <td className="px-4 py-3">
-                    <Button className="text-xs px-2 py-1 h-auto" onClick={() => setListingProduct(p)}>
-                      {t("common.edit")}
-                    </Button>
+                    <div className="flex flex-col gap-1.5">
+                      <Button className="text-xs px-2 py-1 h-auto" onClick={() => setListingProduct(p)}>
+                        {t("common.edit")}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className="text-xs px-2 py-1 h-auto"
+                        disabled={busyId === p.id}
+                        onClick={() => setTestLaunch(p.id)}
+                      >
+                        {t("testLaunch.addToLaunch")}
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}

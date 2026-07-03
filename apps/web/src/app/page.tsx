@@ -7,7 +7,7 @@ import { Card, StatCard, StatusBadge, DecisionBadge, Button, Spinner, EmptyState
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatDate, formatPercent } from "@/lib/format";
-import type { DashboardSummary, AnalyticsSummary, WorkflowHints, OrdersSummary, SupplierDiscoverySummary, SupplierSearchSummary, ListingSummary } from "@/types";
+import type { DashboardSummary, AnalyticsSummary, WorkflowHints, OrdersSummary, SupplierDiscoverySummary, SupplierSearchSummary, ListingSummary, TestLaunchSummary } from "@/types";
 
 export default function DashboardPage() {
   const { t } = useI18n();
@@ -18,6 +18,7 @@ export default function DashboardPage() {
   const [discoverySummary, setDiscoverySummary] = useState<SupplierDiscoverySummary | null>(null);
   const [searchSummary, setSearchSummary] = useState<SupplierSearchSummary | null>(null);
   const [listingSummary, setListingSummary] = useState<ListingSummary | null>(null);
+  const [testLaunchSummary, setTestLaunchSummary] = useState<TestLaunchSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reload = () => {
@@ -29,8 +30,9 @@ export default function DashboardPage() {
       api.supplierDiscoverySummary(),
       api.supplierSearchSummary(),
       api.listingSummary(),
+      api.testLaunchSummary(),
     ])
-      .then(([summary, stats, wf, os, ds, ss, ls]) => {
+      .then(([summary, stats, wf, os, ds, ss, ls, tls]) => {
         setData(summary);
         setAnalytics(stats);
         setWorkflow(wf);
@@ -38,6 +40,7 @@ export default function DashboardPage() {
         setDiscoverySummary(ds);
         setSearchSummary(ss);
         setListingSummary(ls);
+        setTestLaunchSummary(tls);
       })
       .catch((e) => setError(e.message));
   };
@@ -102,6 +105,21 @@ export default function DashboardPage() {
                 <StatCard label={t("dashboard.listingReady")} value={String(listingSummary.ready)} accent="profit" />
                 <StatCard label={t("dashboard.listingNeedsReview")} value={String(listingSummary.needs_review)} accent="warn" />
                 <StatCard label={t("dashboard.listingDraft")} value={String(listingSummary.draft)} />
+              </div>
+            </Card>
+          )}
+
+          {testLaunchSummary && (
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-ink-900">{t("dashboard.testLaunchBlock")}</h3>
+                <Link href="/test-launch" className="text-sm text-brand-600 hover:underline">{t("nav.testLaunch")}</Link>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard label={t("testLaunch.totalCandidates")} value={String(testLaunchSummary.total_candidates)} />
+                <StatCard label={t("testLaunch.selectedCount")} value={String(testLaunchSummary.selected_count)} accent="profit" />
+                <StatCard label={t("testLaunch.inProgressCount")} value={String(testLaunchSummary.in_progress_count)} accent="warn" />
+                <StatCard label={t("testLaunch.expectedProfit")} value={formatMoney(testLaunchSummary.total_expected_profit)} accent="profit" />
               </div>
             </Card>
           )}

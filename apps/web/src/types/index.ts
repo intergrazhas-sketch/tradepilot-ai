@@ -30,6 +30,7 @@ export interface Product {
   decision_score: number;
   decision_reason: string;
   test_status: "none" | "candidate" | "testing" | "rejected";
+  test_launch_status?: "not_selected" | "selected" | "in_progress" | "paused" | "completed";
   stock_quantity: number;
   currency: string;
   status: string;
@@ -61,6 +62,19 @@ export interface ListingSummary {
   ready: number;
   needs_review: number;
   draft: number;
+}
+
+export interface TestLaunchSummary {
+  total_candidates: number;
+  selected_count: number;
+  in_progress_count: number;
+  completed_count: number;
+  total_expected_profit: number;
+  average_margin_percent: number;
+}
+
+export interface TestLaunchProduct extends Product {
+  supplier_name?: string | null;
 }
 
 export interface OrderItem {

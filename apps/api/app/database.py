@@ -47,6 +47,8 @@ def ensure_schema():
         for col, sql in listing_migrations.items():
             if col not in cols:
                 conn.execute(text(sql))
+        if "test_launch_status" not in cols:
+            conn.execute(text("ALTER TABLE products ADD COLUMN test_launch_status VARCHAR DEFAULT 'not_selected'"))
 
     if "orders" not in insp.get_table_names():
         return

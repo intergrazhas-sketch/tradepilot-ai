@@ -73,6 +73,7 @@ class Product(Base):
     listing_score = Column(Integer, default=0)
     listing_notes = Column(Text, nullable=True)
     last_listing_generated_at = Column(DateTime, nullable=True)
+    test_launch_status = Column(String, default="not_selected")
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
