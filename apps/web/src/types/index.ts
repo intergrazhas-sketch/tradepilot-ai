@@ -48,15 +48,46 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
+  product_id?: string | null;
+  supplier_id?: string | null;
+  product_name?: string | null;
+  supplier_name?: string | null;
+  quantity: number;
   customer_name: string;
   customer_phone?: string | null;
   customer_email?: string | null;
+  customer_note?: string | null;
+  selling_price: number;
+  cost_price: number;
+  gross_profit: number;
+  margin_percent: number;
   total_amount: number;
   cost_amount: number;
   profit_amount: number;
   status: string;
   created_at: string;
   items: OrderItem[];
+}
+
+export interface OrdersSummary {
+  total_orders: number;
+  new_orders: number;
+  confirmed_orders: number;
+  delivered_orders: number;
+  cancelled_orders: number;
+  total_revenue: number;
+  total_cost: number;
+  total_profit: number;
+  average_margin_percent: number;
+}
+
+export interface ManualOrderCreate {
+  product_id: string;
+  quantity: number;
+  customer_name?: string;
+  customer_phone?: string;
+  customer_note?: string;
+  selling_price?: number;
 }
 
 export interface DashboardSummary {
@@ -196,10 +227,9 @@ export interface SupplierAnalyticsItem {
 
 export const ORDER_STATUSES = [
   "new",
-  "sent_to_supplier",
   "confirmed",
-  "shipped",
-  "completed",
+  "supplier_ordered",
+  "delivered",
   "cancelled",
 ] as const;
 

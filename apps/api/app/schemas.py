@@ -186,6 +186,19 @@ class OrderItemOut(BaseModel):
     profit_amount: float
 
 
+class ManualOrderCreate(BaseModel):
+    product_id: str
+    quantity: int = 1
+    customer_name: Optional[str] = ""
+    customer_phone: Optional[str] = None
+    customer_note: Optional[str] = None
+    selling_price: Optional[float] = None
+
+
+class OrderStatusUpdate(BaseModel):
+    status: str
+
+
 class OrderCreate(BaseModel):
     customer_name: str
     customer_phone: Optional[str] = None
@@ -203,15 +216,37 @@ class OrderUpdate(BaseModel):
 class OrderOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str
-    customer_name: str
+    product_id: Optional[str] = None
+    supplier_id: Optional[str] = None
+    product_name: Optional[str] = None
+    supplier_name: Optional[str] = None
+    quantity: int = 1
+    customer_name: str = ""
     customer_phone: Optional[str] = None
     customer_email: Optional[str] = None
+    customer_note: Optional[str] = None
+    selling_price: float = 0
+    cost_price: float = 0
+    gross_profit: float = 0
+    margin_percent: float = 0
     total_amount: float
     cost_amount: float
     profit_amount: float
     status: str
     created_at: datetime
     items: list[OrderItemOut] = []
+
+
+class OrdersSummary(BaseModel):
+    total_orders: int
+    new_orders: int
+    confirmed_orders: int
+    delivered_orders: int
+    cancelled_orders: int
+    total_revenue: float
+    total_cost: float
+    total_profit: float
+    average_margin_percent: float
 
 
 # ---------- AI ----------

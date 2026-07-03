@@ -34,3 +34,21 @@ def ensure_schema():
     with engine.begin() as conn:
         if "test_status" not in cols:
             conn.execute(text("ALTER TABLE products ADD COLUMN test_status VARCHAR DEFAULT 'none'"))
+
+    if "orders" not in insp.get_table_names():
+        return
+    order_cols = {c["name"] for c in insp.get_columns("orders")}
+    order_migrations = {
+        "product_id": "ALTER TABLE orders ADD COLUMN product_id VARCHAR",
+        "supplier_id": "ALTER TABLE orders ADD COLUMN supplier_id VARCHAR",
+        "quantity": "ALTER TABLE orders ADD COLUMN quantity INTEGER DEFAULT 1",
+        "customer_note": "ALTER TABLE orders ADD COLUMN customer_note TEXT",
+        "selling_price": "ALTER TABLE orders ADD COLUMN selling_price FLOAT DEFAULT 0",
+        "cost_price": "ALTER TABLE orders ADD COLUMN cost_price FLOAT DEFAULT 0",
+        "gross_profit": "ALTER TABLE orders ADD COLUMN gross_profit FLOAT DEFAULT 0",
+        "margin_percent": "ALTER TABLE orders ADD COLUMN margin_percent FLOAT DEFAULT 0",
+    }
+    with engine.begin() as conn:
+        for col, sql in order_migrations.items():
+            if col not in order_cols:
+                conn.execute(text(sql))

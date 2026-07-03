@@ -75,20 +75,32 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(String, primary_key=True, default=gen_id)
-    customer_name = Column(String, nullable=False)
+    product_id = Column(String, ForeignKey("products.id"), nullable=True)
+    supplier_id = Column(String, ForeignKey("suppliers.id"), nullable=True)
+    quantity = Column(Integer, default=1)
+
+    customer_name = Column(String, nullable=False, default="")
     customer_phone = Column(String, nullable=True)
     customer_email = Column(String, nullable=True)
+    customer_note = Column(Text, nullable=True)
+
+    selling_price = Column(Float, default=0)
+    cost_price = Column(Float, default=0)
+    gross_profit = Column(Float, default=0)
+    margin_percent = Column(Float, default=0)
 
     total_amount = Column(Float, default=0)
     cost_amount = Column(Float, default=0)
     profit_amount = Column(Float, default=0)
 
     status = Column(String, default="new")
-    # new, sent_to_supplier, confirmed, shipped, completed, cancelled
+    # new, confirmed, supplier_ordered, delivered, cancelled (+ legacy values)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+    product = relationship("Product", foreign_keys=[product_id])
+    supplier = relationship("Supplier", foreign_keys=[supplier_id])
 
 
 class OrderItem(Base):

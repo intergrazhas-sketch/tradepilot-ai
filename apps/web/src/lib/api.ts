@@ -28,7 +28,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 import type {
-  Supplier, Product, Order, DashboardSummary, ProfitAnalytics,
+  Supplier, Product, Order, OrdersSummary, ManualOrderCreate, DashboardSummary, ProfitAnalytics,
   Channel, PlatformSettings, ImportPreviewResponse, ImportPreviewRow, ImportCommitResponse,
   AnalyticsSummary, SupplierAnalyticsItem, WorkflowHints,
 } from "@/types";
@@ -113,8 +113,14 @@ export const api = {
   // Orders
   listOrders: (status?: string) =>
     request<Order[]>(`/api/v1/orders${status ? `?status=${status}` : ""}`),
-  createOrder: (data: { customer_name: string; customer_phone?: string; customer_email?: string; items: { product_id: string; quantity: number }[] }) =>
+  ordersSummary: () => request<OrdersSummary>("/api/v1/orders/summary"),
+  createOrder: (data: ManualOrderCreate) =>
     request<Order>("/api/v1/orders", { method: "POST", body: JSON.stringify(data) }),
+  patchOrderStatus: (id: string, status: string) =>
+    request<Order>(`/api/v1/orders/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }),
   updateOrder: (id: string, data: Partial<{ status: string }>) =>
     request<Order>(`/api/v1/orders/${id}`, { method: "PUT", body: JSON.stringify(data) }),
 

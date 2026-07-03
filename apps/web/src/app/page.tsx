@@ -7,21 +7,23 @@ import { Card, StatCard, StatusBadge, DecisionBadge, Button, Spinner, EmptyState
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatDate, formatPercent } from "@/lib/format";
-import type { DashboardSummary, AnalyticsSummary, WorkflowHints } from "@/types";
+import type { DashboardSummary, AnalyticsSummary, WorkflowHints, OrdersSummary } from "@/types";
 
 export default function DashboardPage() {
   const { t } = useI18n();
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [workflow, setWorkflow] = useState<WorkflowHints | null>(null);
+  const [ordersSummary, setOrdersSummary] = useState<OrdersSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reload = () => {
-    Promise.all([api.dashboardSummary(), api.analyticsSummary(), api.workflowHints()])
-      .then(([summary, stats, wf]) => {
+    Promise.all([api.dashboardSummary(), api.analyticsSummary(), api.workflowHints(), api.ordersSummary()])
+      .then(([summary, stats, wf, os]) => {
         setData(summary);
         setAnalytics(stats);
         setWorkflow(wf);
+        setOrdersSummary(os);
       })
       .catch((e) => setError(e.message));
   };
@@ -51,10 +53,28 @@ export default function DashboardPage() {
             <div className="flex flex-wrap gap-2 mt-4">
               <Link href="/import"><Button>{t("dashboard.btnUploadPrice")}</Button></Link>
               <Link href="/best-products"><Button variant="secondary">{t("dashboard.btnBestProducts")}</Button></Link>
+              <Link href="/storefront"><Button variant="secondary">{t("nav.storefront")}</Button></Link>
+              <Link href="/orders"><Button variant="secondary">{t("nav.orders")}</Button></Link>
               <Link href="/suppliers"><Button variant="secondary">{t("dashboard.btnSuppliers")}</Button></Link>
               <Link href="/products?filter=risk"><Button variant="ghost" className="border border-line">{t("dashboard.btnRiskBad")}</Button></Link>
             </div>
           </Card>
+
+          {ordersSummary && (
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-ink-900">{t("dashboard.ordersBlock")}</h3>
+                <Link href="/orders" className="text-sm text-brand-600 hover:underline">{t("nav.orders")}</Link>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <StatCard label={t("dashboard.orders")} value={String(ordersSummary.total_orders)} />
+                <StatCard label={t("dashboard.ordersNew")} value={String(ordersSummary.new_orders)} />
+                <StatCard label={t("dashboard.ordersDelivered")} value={String(ordersSummary.delivered_orders)} accent="profit" />
+                <StatCard label={t("dashboard.profit")} value={formatMoney(ordersSummary.total_profit)} accent="profit" />
+                <StatCard label={t("dashboard.avgMargin")} value={formatPercent(ordersSummary.average_margin_percent)} />
+              </div>
+            </Card>
+          )}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard label={t("dashboard.totalProducts")} value={String(data.total_products)} />
