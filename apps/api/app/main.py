@@ -5,7 +5,7 @@ from app.config import get_settings
 from app.database import Base, engine, ensure_schema
 from app.routers import (
     suppliers, products, ai, orders, dashboard, analytics, channels,
-    settings as settings_router, supplier_discovery, trend_products, supplier_search, test_launch,
+    settings as settings_router, supplier_discovery, trend_products, supplier_search, test_launch, launch_control,
 )
 
 settings = get_settings()
@@ -44,3 +44,4 @@ app.include_router(supplier_discovery.router)
 app.include_router(supplier_search.router)
 app.include_router(trend_products.router)
 app.include_router(test_launch.router)
+app.include_router(launch_control.router)

@@ -77,6 +77,39 @@ export interface TestLaunchProduct extends Product {
   supplier_name?: string | null;
 }
 
+export interface LaunchControlChecklistItem {
+  key: string;
+  title: string;
+  status: "done" | "warning" | "missing";
+  count: number;
+  action_label: string;
+  action_href: string;
+}
+
+export interface LaunchControlSummary {
+  suppliers_count: number;
+  products_count: number;
+  good_products_count: number;
+  ready_listings_count: number;
+  test_candidates_count: number;
+  selected_for_test_count: number;
+  active_orders_count: number;
+  total_expected_profit: number;
+  average_margin_percent: number;
+  checklist: LaunchControlChecklistItem[];
+  checklist_done: number;
+  checklist_warning: number;
+  checklist_missing: number;
+}
+
+export interface LaunchControlIssue {
+  key: string;
+  title: string;
+  count: number;
+  action_label: string;
+  action_href: string;
+}
+
 export interface OrderItem {
   id: string;
   product_id: string;

@@ -35,6 +35,7 @@ import type {
   SupplierSearchRequest, SupplierSearchSummary, SupplierSearchResultCreate,
   SupplierSearchProviderStatus, SupplierSearchWebResult, SupplierSearchLiveRunResponse,
   ProductListing, ListingSummary, TestLaunchSummary, TestLaunchProduct,
+  LaunchControlSummary, LaunchControlIssue,
 } from "@/types";
 
 export const api = {
@@ -234,4 +235,8 @@ export const api = {
     a.remove();
     URL.revokeObjectURL(url);
   },
+
+  // Launch Control
+  launchControlSummary: () => request<LaunchControlSummary>("/api/v1/launch-control/summary"),
+  launchControlIssues: () => request<LaunchControlIssue[]>("/api/v1/launch-control/issues"),
 };

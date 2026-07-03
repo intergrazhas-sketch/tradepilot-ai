@@ -174,6 +174,39 @@ class TestLaunchProductOut(ProductOut):
     supplier_name: Optional[str] = None
 
 
+class LaunchControlChecklistItem(BaseModel):
+    key: str
+    title: str
+    status: str
+    count: int
+    action_label: str
+    action_href: str
+
+
+class LaunchControlSummary(BaseModel):
+    suppliers_count: int
+    products_count: int
+    good_products_count: int
+    ready_listings_count: int
+    test_candidates_count: int
+    selected_for_test_count: int
+    active_orders_count: int
+    total_expected_profit: float
+    average_margin_percent: float
+    checklist: list[LaunchControlChecklistItem]
+    checklist_done: int
+    checklist_warning: int
+    checklist_missing: int
+
+
+class LaunchControlIssue(BaseModel):
+    key: str
+    title: str
+    count: int
+    action_label: str
+    action_href: str
+
+
 # ---------- Product Import ----------
 
 class ProductImportPreviewRow(BaseModel):

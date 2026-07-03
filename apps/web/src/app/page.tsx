@@ -7,7 +7,7 @@ import { Card, StatCard, StatusBadge, DecisionBadge, Button, Spinner, EmptyState
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatDate, formatPercent } from "@/lib/format";
-import type { DashboardSummary, AnalyticsSummary, WorkflowHints, OrdersSummary, SupplierDiscoverySummary, SupplierSearchSummary, ListingSummary, TestLaunchSummary } from "@/types";
+import type { DashboardSummary, AnalyticsSummary, WorkflowHints, OrdersSummary, SupplierDiscoverySummary, SupplierSearchSummary, ListingSummary, TestLaunchSummary, LaunchControlSummary } from "@/types";
 
 export default function DashboardPage() {
   const { t } = useI18n();
@@ -19,6 +19,7 @@ export default function DashboardPage() {
   const [searchSummary, setSearchSummary] = useState<SupplierSearchSummary | null>(null);
   const [listingSummary, setListingSummary] = useState<ListingSummary | null>(null);
   const [testLaunchSummary, setTestLaunchSummary] = useState<TestLaunchSummary | null>(null);
+  const [launchControlSummary, setLaunchControlSummary] = useState<LaunchControlSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const reload = () => {
@@ -31,8 +32,9 @@ export default function DashboardPage() {
       api.supplierSearchSummary(),
       api.listingSummary(),
       api.testLaunchSummary(),
+      api.launchControlSummary(),
     ])
-      .then(([summary, stats, wf, os, ds, ss, ls, tls]) => {
+      .then(([summary, stats, wf, os, ds, ss, ls, tls, lcs]) => {
         setData(summary);
         setAnalytics(stats);
         setWorkflow(wf);
@@ -41,6 +43,7 @@ export default function DashboardPage() {
         setSearchSummary(ss);
         setListingSummary(ls);
         setTestLaunchSummary(tls);
+        setLaunchControlSummary(lcs);
       })
       .catch((e) => setError(e.message));
   };
@@ -121,6 +124,23 @@ export default function DashboardPage() {
                 <StatCard label={t("testLaunch.inProgressCount")} value={String(testLaunchSummary.in_progress_count)} accent="warn" />
                 <StatCard label={t("testLaunch.expectedProfit")} value={formatMoney(testLaunchSummary.total_expected_profit)} accent="profit" />
               </div>
+            </Card>
+          )}
+
+          {launchControlSummary && (
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-ink-900">{t("dashboard.launchReadinessBlock")}</h3>
+                <Link href="/launch-control" className="text-sm text-brand-600 hover:underline">{t("launchControl.openDashboard")}</Link>
+              </div>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <StatCard label={t("launchControl.statusDone")} value={String(launchControlSummary.checklist_done)} accent="profit" />
+                <StatCard label={t("launchControl.statusWarning")} value={String(launchControlSummary.checklist_warning)} accent="warn" />
+                <StatCard label={t("launchControl.statusMissing")} value={String(launchControlSummary.checklist_missing)} />
+              </div>
+              <Link href="/launch-control">
+                <Button variant="secondary">{t("launchControl.openDashboard")}</Button>
+              </Link>
             </Card>
           )}
 
