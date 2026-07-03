@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: "/", key: "nav.dashboard", icon: "grid" },
   { href: "/suppliers", key: "nav.suppliers", icon: "truck" },
   { href: "/supplier-discovery", key: "nav.supplierDiscovery", icon: "search" },
+  { href: "/supplier-search", key: "nav.supplierSearch", icon: "globe" },
   { href: "/trend-products", key: "nav.trendProducts", icon: "trend" },
   { href: "/products", key: "nav.products", icon: "box" },
   { href: "/best-products", key: "nav.bestProducts", icon: "star" },
@@ -29,6 +30,8 @@ function Icon({ name }: { name: string }) {
       return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M2 7h12v9H2z" stroke="currentColor" strokeWidth="1.6"/><path d="M14 10h4l3 3v3h-7z" stroke="currentColor" strokeWidth="1.6"/><circle cx="6" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.6"/><circle cx="17" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "search":
       return <svg className={common} viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.6"/><path d="M16 16l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>;
+    case "globe":
+      return <svg className={common} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" stroke="currentColor" strokeWidth="1.4"/></svg>;
     case "trend":
       return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M4 18V6M4 18h16M8 14l3-4 3 2 5-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>;
     case "box":

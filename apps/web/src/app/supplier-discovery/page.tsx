@@ -154,6 +154,11 @@ export default function SupplierDiscoveryPage() {
               </span>
             </div>
             <div className="text-xs text-ink-500 mb-1">{l.category || "—"} · {location(l)}</div>
+            {l.source === "supplier_search" && (
+              <span className="inline-flex text-[10px] px-1.5 py-0.5 rounded bg-brand-50 text-brand-600 mb-2">
+                {t("supplierDiscovery.sourceSearch")}
+              </span>
+            )}
             {l.website_url && (
               <a href={l.website_url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-600 hover:underline truncate mb-2">
                 {l.website_url}

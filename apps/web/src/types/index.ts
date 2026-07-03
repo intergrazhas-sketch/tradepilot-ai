@@ -283,3 +283,44 @@ export interface TrendProductLead {
 }
 
 export type SupplierLeadFilter = "all" | "open_price" | "wholesale" | "high_score" | "new" | "rejected";
+
+export interface SupplierSearchRequest {
+  id: string;
+  category: string;
+  country?: string | null;
+  city?: string | null;
+  language: string;
+  search_goal?: string | null;
+  required_open_price_list: boolean;
+  required_wholesale: boolean;
+  min_score: number;
+  status: "draft" | "ready" | "reviewed";
+  generated_queries?: string[] | null;
+  notes?: string | null;
+  created_at: string;
+}
+
+export interface SupplierSearchSummary {
+  total_requests: number;
+  ready_requests: number;
+  generated_queries_count: number;
+  leads_created_from_search: number;
+  high_fit_leads: number;
+}
+
+export interface SupplierSearchResultCreate {
+  name: string;
+  website_url?: string;
+  source_url?: string;
+  category?: string;
+  country?: string;
+  city?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  whatsapp?: string;
+  price_list_url?: string;
+  has_wholesale_terms?: boolean;
+  delivery_info?: string;
+  min_order_quantity?: number;
+  notes?: string;
+}

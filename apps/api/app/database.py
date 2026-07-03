@@ -52,3 +52,9 @@ def ensure_schema():
         for col, sql in order_migrations.items():
             if col not in order_cols:
                 conn.execute(text(sql))
+
+    if "supplier_leads" in insp.get_table_names():
+        lead_cols = {c["name"] for c in insp.get_columns("supplier_leads")}
+        with engine.begin() as conn:
+            if "search_request_id" not in lead_cols:
+                conn.execute(text("ALTER TABLE supplier_leads ADD COLUMN search_request_id VARCHAR"))

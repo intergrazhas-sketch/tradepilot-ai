@@ -170,6 +170,7 @@ class SupplierLead(Base):
     min_order_quantity = Column(Integer, nullable=True)
     delivery_info = Column(Text, nullable=True)
     source = Column(String, default="manual")
+    search_request_id = Column(String, ForeignKey("supplier_search_requests.id"), nullable=True)
     notes = Column(Text, nullable=True)
     discovery_status = Column(String, default="new")
     supplier_fit_score = Column(Integer, default=0)
@@ -178,7 +179,28 @@ class SupplierLead(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     converted_supplier = relationship("Supplier", foreign_keys=[converted_supplier_id])
+    search_request = relationship("SupplierSearchRequest", back_populates="leads")
     trend_products = relationship("TrendProductLead", back_populates="supplier_lead")
+
+
+class SupplierSearchRequest(Base):
+    __tablename__ = "supplier_search_requests"
+
+    id = Column(String, primary_key=True, default=gen_id)
+    category = Column(String, nullable=False)
+    country = Column(String, nullable=True)
+    city = Column(String, nullable=True)
+    language = Column(String, default="ru")
+    search_goal = Column(String, nullable=True)
+    required_open_price_list = Column(Boolean, default=True)
+    required_wholesale = Column(Boolean, default=True)
+    min_score = Column(Integer, default=50)
+    status = Column(String, default="draft")
+    generated_queries = Column(JSON, nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    leads = relationship("SupplierLead", back_populates="search_request")
 
 
 class TrendProductLead(Base):

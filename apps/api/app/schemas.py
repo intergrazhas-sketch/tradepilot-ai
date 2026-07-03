@@ -417,6 +417,62 @@ class ConvertLeadResponse(BaseModel):
     supplier: SupplierOut
 
 
+# ---------- Supplier Search ----------
+
+class SupplierSearchRequestBase(BaseModel):
+    category: str
+    country: Optional[str] = None
+    city: Optional[str] = None
+    language: str = "ru"
+    search_goal: Optional[str] = None
+    required_open_price_list: bool = True
+    required_wholesale: bool = True
+    min_score: int = 50
+    notes: Optional[str] = None
+
+
+class SupplierSearchRequestCreate(SupplierSearchRequestBase):
+    pass
+
+
+class SupplierSearchRequestOut(SupplierSearchRequestBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    status: str
+    generated_queries: Optional[list[str]] = None
+    created_at: datetime
+
+
+class SupplierSearchResultCreate(BaseModel):
+    name: str
+    website_url: Optional[str] = None
+    source_url: Optional[str] = None
+    category: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    whatsapp: Optional[str] = None
+    price_list_url: Optional[str] = None
+    has_wholesale_terms: bool = False
+    delivery_info: Optional[str] = None
+    min_order_quantity: Optional[int] = None
+    notes: Optional[str] = None
+
+
+class SupplierSearchAddResultResponse(BaseModel):
+    lead: SupplierLeadOut
+    request: SupplierSearchRequestOut
+
+
+class SupplierSearchSummary(BaseModel):
+    total_requests: int
+    ready_requests: int
+    generated_queries_count: int
+    leads_created_from_search: int
+    high_fit_leads: int
+
+
 # ---------- Trend Products ----------
 
 class TrendProductLeadBase(BaseModel):
