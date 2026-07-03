@@ -29,6 +29,7 @@ export interface Product {
   decision_status: "good" | "risk" | "bad";
   decision_score: number;
   decision_reason: string;
+  test_status: "none" | "candidate" | "testing" | "rejected";
   stock_quantity: number;
   currency: string;
   status: string;
@@ -94,6 +95,16 @@ export interface PlatformSettings {
   default_markup_percent: number;
   plan: string;
   company_name: string;
+}
+
+export interface WorkflowHints {
+  primary_message: string;
+  secondary_messages: string[];
+  total_products: number;
+  good_products: number;
+  risk_products: number;
+  bad_products: number;
+  has_import_issues: boolean;
 }
 
 export interface ImportPreviewRow {

@@ -58,6 +58,7 @@ class ProductBase(BaseModel):
     stock_quantity: int = 0
     currency: str = "KZT"
     status: str = "draft"
+    test_status: str = "none"
     image_url: Optional[str] = None
 
 
@@ -80,7 +81,12 @@ class ProductUpdate(BaseModel):
     stock_quantity: Optional[int] = None
     currency: Optional[str] = None
     status: Optional[str] = None
+    test_status: Optional[str] = None
     image_url: Optional[str] = None
+
+
+class ProductTestStatusUpdate(BaseModel):
+    test_status: str  # none | candidate | testing | rejected
 
 
 class ProductOut(ProductBase):
@@ -257,6 +263,16 @@ class DashboardSummary(BaseModel):
     low_stock_products: int
     recent_orders: list[OrderOut]
     ai_recommendations: list[str]
+
+
+class WorkflowHints(BaseModel):
+    primary_message: str
+    secondary_messages: list[str] = []
+    total_products: int = 0
+    good_products: int = 0
+    risk_products: int = 0
+    bad_products: int = 0
+    has_import_issues: bool = False
 
 
 class ProfitAnalytics(BaseModel):

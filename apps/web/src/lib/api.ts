@@ -30,12 +30,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 import type {
   Supplier, Product, Order, DashboardSummary, ProfitAnalytics,
   Channel, PlatformSettings, ImportPreviewResponse, ImportPreviewRow, ImportCommitResponse,
-  AnalyticsSummary, SupplierAnalyticsItem,
+  AnalyticsSummary, SupplierAnalyticsItem, WorkflowHints,
 } from "@/types";
 
 export const api = {
   // Dashboard
   dashboardSummary: () => request<DashboardSummary>("/api/v1/dashboard/summary"),
+  workflowHints: () => request<WorkflowHints>("/api/v1/dashboard/workflow"),
 
   // Suppliers
   listSuppliers: () => request<Supplier[]>("/api/v1/suppliers"),
@@ -47,14 +48,23 @@ export const api = {
     request<void>(`/api/v1/suppliers/${id}`, { method: "DELETE" }),
 
   // Products
-  listProducts: (params?: { supplier_id?: string; category?: string; search?: string }) => {
+  listProducts: (params?: { supplier_id?: string; category?: string; search?: string; decision_status?: string; test_status?: string }) => {
     const qs = new URLSearchParams();
     if (params?.supplier_id) qs.set("supplier_id", params.supplier_id);
     if (params?.category) qs.set("category", params.category);
     if (params?.search) qs.set("search", params.search);
+    if (params?.decision_status) qs.set("decision_status", params.decision_status);
+    if (params?.test_status) qs.set("test_status", params.test_status);
     const query = qs.toString();
     return request<Product[]>(`/api/v1/products${query ? `?${query}` : ""}`);
   },
+  listBestProducts: (sortBy: "score" | "profit" | "margin" = "score") =>
+    request<Product[]>(`/api/v1/products/best?sort_by=${sortBy}`),
+  updateTestStatus: (id: string, test_status: Product["test_status"]) =>
+    request<Product>(`/api/v1/products/${id}/test-status`, {
+      method: "PATCH",
+      body: JSON.stringify({ test_status }),
+    }),
   createProduct: (data: Partial<Product>) =>
     request<Product>("/api/v1/products", { method: "POST", body: JSON.stringify(data) }),
   updateProduct: (id: string, data: Partial<Product>) =>

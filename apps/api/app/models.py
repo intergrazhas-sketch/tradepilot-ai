@@ -62,6 +62,7 @@ class Product(Base):
     stock_quantity = Column(Integer, default=0)
     currency = Column(String, default="KZT")
     status = Column(String, default="draft")  # draft, active, archived
+    test_status = Column(String, default="none")  # none, candidate, testing, rejected
     image_url = Column(String, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)

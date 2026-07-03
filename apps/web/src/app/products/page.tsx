@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/PageShell";
-import { Card, Button, Input, Select, StatusBadge, DecisionBadge, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
+import { Card, Button, Input, Select, DecisionBadge, TestStatusBadge, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
@@ -10,8 +11,17 @@ import type { Product, Supplier } from "@/types";
 
 type DecisionFilter = "" | "good" | "risk" | "bad";
 
-export default function ProductsPage() {
+export default function ProductsPageWrapper() {
+  return (
+    <Suspense fallback={<Spinner />}>
+      <ProductsPage />
+    </Suspense>
+  );
+}
+
+function ProductsPage() {
   const { t } = useI18n();
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[] | null>(null);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +37,30 @@ export default function ProductsPage() {
   };
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    const f = searchParams.get("filter");
+    if (f === "good" || f === "risk" || f === "bad") setDecisionFilter(f);
+  }, [searchParams]);
+
+  const setTestStatus = async (id: string, test_status: Product["test_status"]) => {
+    setBusyId(id);
+    try {
+      await api.updateTestStatus(id, test_status);
+      load();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const testLabel = (s: string) => {
+    if (s === "candidate") return t("testStatus.candidate");
+    if (s === "testing") return t("testStatus.testing");
+    if (s === "rejected") return t("testStatus.rejected");
+    return "";
+  };
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -157,7 +191,10 @@ export default function ProductsPage() {
                   <td className="px-4 py-3">
                     <div className="font-medium text-ink-900">{p.name_ai || p.name_raw}</div>
                     <div className="text-xs text-ink-500 mb-1.5">{p.sku || "—"} · {p.category || "Без категории"}</div>
-                    <DecisionBadge status={p.decision_status} label={decisionLabel(p.decision_status)} />
+                    <div className="flex flex-wrap gap-1.5">
+                      <DecisionBadge status={p.decision_status} label={decisionLabel(p.decision_status)} />
+                      <TestStatusBadge status={p.test_status} label={testLabel(p.test_status)} />
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-xs text-ink-600 max-w-[180px]">{p.decision_reason || "—"}</td>
                   <td className="px-4 py-3 text-ink-700">{supplierName(p.supplier_id)}</td>
@@ -192,6 +229,14 @@ export default function ProductsPage() {
                         onClick={() => recalcPrice(p.id)}
                       >
                         {t("products.recalcPrice")}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="!px-2.5 !py-1 text-xs w-full justify-start border border-brand-200 text-brand-600"
+                        disabled={busyId === p.id}
+                        onClick={() => setTestStatus(p.id, "candidate")}
+                      >
+                        {t("testStatus.markCandidate")}
                       </Button>
                     </div>
                   </td>

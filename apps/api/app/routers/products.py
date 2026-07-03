@@ -4,8 +4,11 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
 from app.services.import_service import build_preview_rows, commit_import, parse_upload
+from app.services.decision_service import product_snapshot
 
 router = APIRouter(prefix="/api/v1/products", tags=["products"])
+
+VALID_TEST_STATUSES = {"none", "candidate", "testing", "rejected"}
 
 
 def _to_product_out(product: models.Product) -> schemas.ProductOut:
@@ -13,11 +16,31 @@ def _to_product_out(product: models.Product) -> schemas.ProductOut:
     return schemas.ProductOut.model_validate(product)
 
 
+@router.get("/best", response_model=list[schemas.ProductOut])
+def list_best_products(
+    sort_by: str = "score",
+    db: Session = Depends(get_db),
+):
+    products = db.query(models.Product).all()
+    good = [p for p in products if product_snapshot(p)["decision_status"] == "good"]
+    outs = [_to_product_out(p) for p in good]
+
+    if sort_by == "profit":
+        outs.sort(key=lambda x: x.gross_profit, reverse=True)
+    elif sort_by == "margin":
+        outs.sort(key=lambda x: x.margin_percent, reverse=True)
+    else:
+        outs.sort(key=lambda x: x.decision_score, reverse=True)
+    return outs
+
+
 @router.get("", response_model=list[schemas.ProductOut])
 def list_products(
     supplier_id: str | None = None,
     category: str | None = None,
     search: str | None = None,
+    decision_status: str | None = None,
+    test_status: str | None = None,
     db: Session = Depends(get_db),
 ):
     query = db.query(models.Product)
@@ -33,7 +56,12 @@ def list_products(
             (models.Product.sku.ilike(like))
         )
     products = query.order_by(models.Product.created_at.desc()).all()
-    return [_to_product_out(p) for p in products]
+    outs = [_to_product_out(p) for p in products]
+    if decision_status:
+        outs = [o for o in outs if o.decision_status == decision_status]
+    if test_status:
+        outs = [o for o in outs if o.test_status == test_status]
+    return outs
 
 
 @router.post("", response_model=schemas.ProductOut, status_code=201)
@@ -60,6 +88,23 @@ def update_product(product_id: str, payload: schemas.ProductUpdate, db: Session 
         raise HTTPException(404, "Product not found")
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(product, field, value)
+    db.commit()
+    db.refresh(product)
+    return _to_product_out(product)
+
+
+@router.patch("/{product_id}/test-status", response_model=schemas.ProductOut)
+def update_test_status(
+    product_id: str,
+    payload: schemas.ProductTestStatusUpdate,
+    db: Session = Depends(get_db),
+):
+    if payload.test_status not in VALID_TEST_STATUSES:
+        raise HTTPException(400, f"test_status must be one of: {', '.join(sorted(VALID_TEST_STATUSES))}")
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not product:
+        raise HTTPException(404, "Product not found")
+    product.test_status = payload.test_status
     db.commit()
     db.refresh(product)
     return _to_product_out(product)

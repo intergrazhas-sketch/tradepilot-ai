@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
 from app.services.pricing import calc_margin_percent
+from app.services.decision_service import product_snapshot
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
 
@@ -38,6 +39,44 @@ def _build_recommendations(db: Session) -> list[str]:
         recs.append("Все основные показатели в норме. Загрузите больше товаров, чтобы расти дальше.")
 
     return recs
+
+
+@router.get("/workflow", response_model=schemas.WorkflowHints)
+def workflow_hints(db: Session = Depends(get_db)):
+    products = db.query(models.Product).all()
+    snapshots = [product_snapshot(p) for p in products]
+    total = len(snapshots)
+    good = sum(1 for s in snapshots if s["decision_status"] == "good")
+    risk = sum(1 for s in snapshots if s["decision_status"] == "risk")
+    bad = sum(1 for s in snapshots if s["decision_status"] == "bad")
+
+    secondary: list[str] = []
+    if total == 0:
+        primary = "workflow.uploadPrice"
+    elif bad >= 3 or (total > 0 and bad / total >= 0.3):
+        primary = "workflow.checkPrices"
+        if bad:
+            secondary.append("workflow.checkImportErrors")
+    elif good > 0:
+        primary = "workflow.startBest"
+    elif risk > 0:
+        primary = "workflow.checkRisk"
+        secondary.append("workflow.checkImportErrors")
+    else:
+        primary = "workflow.uploadPrice"
+
+    if bad > 0 and "workflow.checkImportErrors" not in secondary:
+        secondary.append("workflow.checkImportErrors")
+
+    return schemas.WorkflowHints(
+        primary_message=primary,
+        secondary_messages=secondary,
+        total_products=total,
+        good_products=good,
+        risk_products=risk,
+        bad_products=bad,
+        has_import_issues=bad > 0 or risk > 0,
+    )
 
 
 @router.get("/summary", response_model=schemas.DashboardSummary)

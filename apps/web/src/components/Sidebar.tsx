@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: "/", key: "nav.dashboard", icon: "grid" },
   { href: "/suppliers", key: "nav.suppliers", icon: "truck" },
   { href: "/products", key: "nav.products", icon: "box" },
+  { href: "/best-products", key: "nav.bestProducts", icon: "star" },
   { href: "/import", key: "nav.import", icon: "upload" },
   { href: "/ai-studio", key: "nav.aiStudio", icon: "sparkles" },
   { href: "/storefront", key: "nav.storefront", icon: "store" },
@@ -26,6 +27,8 @@ function Icon({ name }: { name: string }) {
       return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M2 7h12v9H2z" stroke="currentColor" strokeWidth="1.6"/><path d="M14 10h4l3 3v3h-7z" stroke="currentColor" strokeWidth="1.6"/><circle cx="6" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.6"/><circle cx="17" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "box":
       return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" strokeWidth="1.6"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" strokeWidth="1.6"/><path d="M12 11v10" stroke="currentColor" strokeWidth="1.6"/></svg>;
+    case "star":
+      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M12 3l2.4 7.4H22l-6 4.6 2.3 7-6.3-4.6L5.7 22l2.3-7-6-4.6h7.6L12 3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>;
     case "upload":
       return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "sparkles":
@@ -65,7 +68,9 @@ export function Sidebar() {
 
       <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
-          const active = pathname === item.href;
+          const active = item.href === "/"
+            ? pathname === "/"
+            : pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <Link
               key={item.href}

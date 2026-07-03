@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
 import { Card, Button, Select, Spinner, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
@@ -87,6 +88,27 @@ export default function ImportPage() {
       {error && <ErrorBanner message={error} />}
 
       <Card className="p-5 mb-6">
+        <h3 className="text-sm font-semibold text-ink-900 mb-2">{t("import.formatTitle")}</h3>
+        <p className="text-xs text-ink-600 mb-3">{t("import.formatCsvXlsx")}</p>
+        <div className="grid md:grid-cols-2 gap-4 text-xs text-ink-700 mb-4">
+          <div>
+            <p className="font-medium text-ink-900 mb-1">{t("import.requiredFields")}</p>
+            <ul className="space-y-0.5 list-disc list-inside">
+              <li>{t("import.fieldSku")}</li>
+              <li>{t("import.fieldName")}</li>
+              <li>{t("import.fieldCost")}</li>
+            </ul>
+          </div>
+          <div>
+            <p className="font-medium text-ink-900 mb-1">{t("import.recommendedFields")}</p>
+            <ul className="space-y-0.5 list-disc list-inside">
+              <li>{t("import.fieldSell")}</li>
+              <li>{t("import.fieldStock")}</li>
+              <li>{t("import.fieldCategory")}</li>
+              <li>{t("import.fieldBrand")}</li>
+            </ul>
+          </div>
+        </div>
         <div className="grid md:grid-cols-[1fr_auto] gap-4 items-end">
           <Select label={t("import.selectSupplier")} value={supplierId} onChange={(e) => setSupplierId(e.target.value)}>
             {suppliers.length === 0 && <option value="">Сначала добавьте поставщика</option>}
@@ -134,6 +156,9 @@ export default function ImportPage() {
               </div>
             </div>
           )}
+          <div className="mt-4">
+            <Link href="/best-products"><Button>{t("import.nextStepBest")}</Button></Link>
+          </div>
         </Card>
       )}
 
@@ -179,7 +204,11 @@ export default function ImportPage() {
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${ROW_STATUS_CLASS[row.row_status] || ""}`}>
                         {ROW_STATUS_LABEL[row.row_status] || row.row_status}
                       </span>
-                      {row.error && <div className="text-xs text-danger-500 mt-1">{row.error}</div>}
+                      {row.error && (
+                        <div className="text-xs text-danger-600 mt-1 font-medium">
+                          ⚠ {row.error}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

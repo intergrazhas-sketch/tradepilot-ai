@@ -1,27 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
-import { Card, StatCard, StatusBadge, DecisionBadge, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
+import { Card, StatCard, StatusBadge, DecisionBadge, Button, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatDate, formatPercent } from "@/lib/format";
-import type { DashboardSummary, AnalyticsSummary } from "@/types";
+import type { DashboardSummary, AnalyticsSummary, WorkflowHints } from "@/types";
 
 export default function DashboardPage() {
   const { t } = useI18n();
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
+  const [workflow, setWorkflow] = useState<WorkflowHints | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    Promise.all([api.dashboardSummary(), api.analyticsSummary()])
-      .then(([summary, stats]) => {
+  const reload = () => {
+    Promise.all([api.dashboardSummary(), api.analyticsSummary(), api.workflowHints()])
+      .then(([summary, stats, wf]) => {
         setData(summary);
         setAnalytics(stats);
+        setWorkflow(wf);
       })
       .catch((e) => setError(e.message));
-  }, []);
+  };
+
+  useEffect(() => { reload(); }, []);
 
   const decisionLabel = (status: string) => {
     if (status === "good") return t("decision.good");
@@ -35,8 +40,22 @@ export default function DashboardPage() {
       {error && <ErrorBanner message={error} />}
       {!data && !error && <Spinner />}
 
-      {data && (
+      {data && workflow && (
         <div className="space-y-6">
+          <Card className="p-5 border-brand-200 bg-brand-50/30">
+            <h3 className="font-semibold text-ink-900 mb-2">{t("dashboard.whatToDoNow")}</h3>
+            <p className="text-sm text-ink-700 mb-4">{t(workflow.primary_message)}</p>
+            {workflow.secondary_messages.map((key) => (
+              <p key={key} className="text-xs text-warn-600 mb-1">• {t(key)}</p>
+            ))}
+            <div className="flex flex-wrap gap-2 mt-4">
+              <Link href="/import"><Button>{t("dashboard.btnUploadPrice")}</Button></Link>
+              <Link href="/best-products"><Button variant="secondary">{t("dashboard.btnBestProducts")}</Button></Link>
+              <Link href="/suppliers"><Button variant="secondary">{t("dashboard.btnSuppliers")}</Button></Link>
+              <Link href="/products?filter=risk"><Button variant="ghost" className="border border-line">{t("dashboard.btnRiskBad")}</Button></Link>
+            </div>
+          </Card>
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard label={t("dashboard.totalProducts")} value={String(data.total_products)} />
             <StatCard label={t("dashboard.activeProducts")} value={String(data.active_products)} />

@@ -19,3 +19,18 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def ensure_schema():
+    """Lightweight SQLite migrations for MVP columns added after first deploy."""
+    if not settings.DATABASE_URL.startswith("sqlite"):
+        return
+    from sqlalchemy import inspect, text
+
+    insp = inspect(engine)
+    if "products" not in insp.get_table_names():
+        return
+    cols = {c["name"] for c in insp.get_columns("products")}
+    with engine.begin() as conn:
+        if "test_status" not in cols:
+            conn.execute(text("ALTER TABLE products ADD COLUMN test_status VARCHAR DEFAULT 'none'"))

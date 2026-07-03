@@ -68,6 +68,21 @@ const STATUS_LABELS_RU: Record<string, string> = {
   bad: "Плохой",
 };
 
+export function TestStatusBadge({ status, label }: { status: string; label?: string }) {
+  const styles: Record<string, string> = {
+    candidate: "bg-brand-50 text-brand-600",
+    testing: "bg-warn-50 text-warn-500",
+    rejected: "bg-danger-50 text-danger-500",
+    none: "bg-ink-300/20 text-ink-500",
+  };
+  if (status === "none" || !status) return null;
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] || styles.none}`}>
+      {label || status}
+    </span>
+  );
+}
+
 export function DecisionBadge({ status, label }: { status: string; label?: string }) {
   const styles: Record<string, string> = {
     good: "bg-profit-50 text-profit-500",
