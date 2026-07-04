@@ -226,7 +226,7 @@ export function Select({
 export function ErrorBanner({ message }: { message: string }) {
   return (
     <div className="mb-4 px-4 py-3 rounded-lg bg-danger-50 text-danger-500 text-sm">
-      Не удалось загрузить данные. Убедитесь, что backend запущен на http://localhost:8010. ({message})
+      Не удалось загрузить данные. Проверьте backend API. ({message})
     </div>
   );
 }
