@@ -100,6 +100,7 @@ Frontend can be published on [Netlify](https://www.netlify.com/) without changin
 |---|---|
 | Base directory | `apps/web` |
 | Build command | `npm ci && npm run build` |
+| Publish directory | `.next` |
 | Plugin | `@netlify/plugin-nextjs` (declared in `netlify.toml`; Netlify installs it at build time) |
 
 **Environment variable (Netlify site → Environment variables):**
