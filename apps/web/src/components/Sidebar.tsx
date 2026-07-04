@@ -26,41 +26,42 @@ const NAV_ITEMS = [
 
 function Icon({ name }: { name: string }) {
   const common = "w-[18px] h-[18px]";
+  const svgProps = { className: common, width: 18, height: 18, viewBox: "0 0 24 24", fill: "none" as const };
   switch (name) {
     case "grid":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/></svg>;
+      return <svg {...svgProps}><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "truck":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M2 7h12v9H2z" stroke="currentColor" strokeWidth="1.6"/><path d="M14 10h4l3 3v3h-7z" stroke="currentColor" strokeWidth="1.6"/><circle cx="6" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.6"/><circle cx="17" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.6"/></svg>;
+      return <svg {...svgProps}><path d="M2 7h12v9H2z" stroke="currentColor" strokeWidth="1.6"/><path d="M14 10h4l3 3v3h-7z" stroke="currentColor" strokeWidth="1.6"/><circle cx="6" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.6"/><circle cx="17" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "search":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.6"/><path d="M16 16l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>;
+      return <svg {...svgProps}><circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.6"/><path d="M16 16l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>;
     case "globe":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" stroke="currentColor" strokeWidth="1.4"/></svg>;
+      return <svg {...svgProps}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" stroke="currentColor" strokeWidth="1.4"/></svg>;
     case "trend":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M4 18V6M4 18h16M8 14l3-4 3 2 5-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+      return <svg {...svgProps}><path d="M4 18V6M4 18h16M8 14l3-4 3 2 5-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>;
     case "box":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" strokeWidth="1.6"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" strokeWidth="1.6"/><path d="M12 11v10" stroke="currentColor" strokeWidth="1.6"/></svg>;
+      return <svg {...svgProps}><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" strokeWidth="1.6"/><path d="M3 7v10l9 4 9-4V7" stroke="currentColor" strokeWidth="1.6"/><path d="M12 11v10" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "star":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M12 3l2.4 7.4H22l-6 4.6 2.3 7-6.3-4.6L5.7 22l2.3-7-6-4.6h7.6L12 3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>;
+      return <svg {...svgProps}><path d="M12 3l2.4 7.4H22l-6 4.6 2.3 7-6.3-4.6L5.7 22l2.3-7-6-4.6h7.6L12 3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>;
     case "card":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6"/><path d="M3 10h18" stroke="currentColor" strokeWidth="1.6"/></svg>;
+      return <svg {...svgProps}><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6"/><path d="M3 10h18" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "rocket":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M12 3c2 4 2 8 0 12-2-4-2-8 0-12z" stroke="currentColor" strokeWidth="1.6"/><path d="M12 15l-3 6 3-2 3 2-3-6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor"/></svg>;
+      return <svg {...svgProps}><path d="M12 3c2 4 2 8 0 12-2-4-2-8 0-12z" stroke="currentColor" strokeWidth="1.6"/><path d="M12 15l-3 6 3-2 3 2-3-6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor"/></svg>;
     case "checklist":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M9 6h12M9 12h12M9 18h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M4 7l1.5 1.5L7 6M4 13l1.5 1.5L7 12M4 19l1.5 1.5L7 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+      return <svg {...svgProps}><path d="M9 6h12M9 12h12M9 18h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M4 7l1.5 1.5L7 6M4 13l1.5 1.5L7 12M4 19l1.5 1.5L7 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>;
     case "upload":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="currentColor" strokeWidth="1.6"/></svg>;
+      return <svg {...svgProps}><path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "sparkles":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="M19 14l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>;
+      return <svg {...svgProps}><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="M19 14l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>;
     case "store":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M3 9l1-5h16l1 5" stroke="currentColor" strokeWidth="1.6"/><path d="M4 9v10h16V9" stroke="currentColor" strokeWidth="1.6"/><path d="M9 19v-6h6v6" stroke="currentColor" strokeWidth="1.6"/></svg>;
+      return <svg {...svgProps}><path d="M3 9l1-5h16l1 5" stroke="currentColor" strokeWidth="1.6"/><path d="M4 9v10h16V9" stroke="currentColor" strokeWidth="1.6"/><path d="M9 19v-6h6v6" stroke="currentColor" strokeWidth="1.6"/></svg>;
     case "list":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="3.5" cy="6" r="1.2" fill="currentColor"/><circle cx="3.5" cy="12" r="1.2" fill="currentColor"/><circle cx="3.5" cy="18" r="1.2" fill="currentColor"/></svg>;
+      return <svg {...svgProps}><path d="M8 6h13M8 12h13M8 18h13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="3.5" cy="6" r="1.2" fill="currentColor"/><circle cx="3.5" cy="12" r="1.2" fill="currentColor"/><circle cx="3.5" cy="18" r="1.2" fill="currentColor"/></svg>;
     case "chart":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M4 19V9M11 19V4M18 19v-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>;
+      return <svg {...svgProps}><path d="M4 19V9M11 19V4M18 19v-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>;
     case "link":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><path d="M9 15l6-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M11 7l1-1a3.5 3.5 0 015 5l-1 1M13 17l-1 1a3.5 3.5 0 01-5-5l1-1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>;
+      return <svg {...svgProps}><path d="M9 15l6-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><path d="M11 7l1-1a3.5 3.5 0 015 5l-1 1M13 17l-1 1a3.5 3.5 0 01-5-5l1-1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>;
     case "gear":
-      return <svg className={common} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6"/><path d="M19 12a7 7 0 00-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 00-2-1.2L14 3h-4l-.4 2.5a7 7 0 00-2 1.2l-2.3-.9-2 3.4 2 1.5A7 7 0 005 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-.9c.6.5 1.3.9 2 1.2L10 21h4l.4-2.5a7 7 0 002-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z" stroke="currentColor" strokeWidth="1.3"/></svg>;
+      return <svg {...svgProps}><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6"/><path d="M19 12a7 7 0 00-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 00-2-1.2L14 3h-4l-.4 2.5a7 7 0 00-2 1.2l-2.3-.9-2 3.4 2 1.5A7 7 0 005 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-.9c.6.5 1.3.9 2 1.2L10 21h4l.4-2.5a7 7 0 002-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z" stroke="currentColor" strokeWidth="1.3"/></svg>;
     default:
       return null;
   }
