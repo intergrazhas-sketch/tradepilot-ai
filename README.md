@@ -90,6 +90,31 @@ npm run dev:clean
 
 This removes `apps/web/.next` and starts the dev server on port 3010. Works on Windows (PowerShell) and macOS/Linux.
 
+## Netlify frontend
+
+Frontend can be published on [Netlify](https://www.netlify.com/) without changing local dev ports (3010 / 8010).
+
+**Repository settings (or use root `netlify.toml`):**
+
+| Setting | Value |
+|---|---|
+| Base directory | `apps/web` |
+| Build command | `npm ci && npm run build` |
+| Plugin | `@netlify/plugin-nextjs` (declared in `netlify.toml`; Netlify installs it at build time) |
+
+**Environment variable (Netlify site → Environment variables):**
+
+```
+NEXT_PUBLIC_API_URL=https://<public-backend-url>
+```
+
+The frontend reads this in `apps/web/src/lib/api.ts`. Local dev still defaults to `http://localhost:8010` when unset.
+
+**Backend requirements for a live Netlify URL:**
+
+- Backend must be deployed at a **public HTTPS URL** (localhost will not work from Netlify).
+- Add the Netlify site origin to backend `CORS_ORIGINS` (e.g. `https://your-app.netlify.app`).
+
 ## What works in this MVP
 
 Ordered by the team's current priority (internal trading tool, not a public SaaS yet):
