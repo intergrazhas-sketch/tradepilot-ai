@@ -144,7 +144,7 @@ def generate_product_listing(product, locale: str = "ru") -> dict:
     base_name = product.name_raw or ""
     title = provider.improve_title(base_name, product.brand, product.category, locale=loc)
 
-    desc_source = product.description_ai or product.description_raw
+    desc_source = product.description_raw
     description = provider.improve_description(title, desc_source, product.brand, locale=loc)
 
     bullets = _build_bullets(product, snap, loc)
@@ -154,11 +154,6 @@ def generate_product_listing(product, locale: str = "ru") -> dict:
     product.listing_description = description
     product.listing_bullets = bullets
     product.listing_keywords = keywords
-
-    if not product.name_ai:
-        product.name_ai = title
-    if not product.description_ai:
-        product.description_ai = description
 
     score = calc_listing_score(product, bullets, keywords)
     product.listing_score = score

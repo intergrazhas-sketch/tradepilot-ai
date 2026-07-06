@@ -7,7 +7,7 @@ import { Card, Button, Input, Modal, Spinner, EmptyState, ErrorBanner, DecisionB
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
-import { productDisplayTitle, productDisplayDescription } from "@/components/ProductListingModal";
+import { ProductListingModal, productDisplayTitle, productDisplayDescription } from "@/components/ProductListingModal";
 import type { Product, Supplier } from "@/types";
 
 function isStorefrontProduct(p: Product) {
@@ -28,14 +28,20 @@ export default function StorefrontPage() {
   const [sellingPrice, setSellingPrice] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [listingProduct, setListingProduct] = useState<Product | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = () => {
     Promise.all([api.listListingReady(), api.listSuppliers()])
       .then(([ps, ss]) => {
         setProducts(ps.filter(isStorefrontProduct));
         setSuppliers(ss);
       })
       .catch((e) => setError(e.message));
+  };
+
+  useEffect(() => {
+    load();
   }, []);
 
   const supplierName = (id?: string | null) => suppliers.find((s) => s.id === id)?.name || "—";
@@ -97,6 +103,19 @@ export default function StorefrontPage() {
     return status;
   };
 
+  const regenerateListing = async (id: string) => {
+    setBusyId(id);
+    setError(null);
+    try {
+      await api.generateProductListing(id);
+      load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <PageShell title={t("storefront.title")} subtitle={t("storefront.subtitle")}>
       {error && <ErrorBanner message={error} />}
@@ -136,6 +155,19 @@ export default function StorefrontPage() {
               <div className="font-medium text-ink-900">{p.stock_quantity}</div>
             </div>
             <Button onClick={() => openOrder(p)} className="w-full mt-auto">{t("storefront.createOrder")}</Button>
+            <div className="flex gap-1.5 mt-2">
+              <Button variant="secondary" className="flex-1 text-xs px-2 py-1 h-auto" onClick={() => setListingProduct(p)}>
+                {t("common.edit")}
+              </Button>
+              <Button
+                variant="ghost"
+                className="flex-1 text-xs px-2 py-1 h-auto border border-line/60"
+                disabled={busyId === p.id}
+                onClick={() => regenerateListing(p.id)}
+              >
+                {busyId === p.id ? t("common.loading") : t("listing.regenerate")}
+              </Button>
+            </div>
           </Card>
         ))}
       </div>
@@ -192,6 +224,13 @@ export default function StorefrontPage() {
           </div>
         )}
       </Modal>
+
+      <ProductListingModal
+        product={listingProduct}
+        open={!!listingProduct}
+        onClose={() => setListingProduct(null)}
+        onSaved={load}
+      />
     </PageShell>
   );
 }

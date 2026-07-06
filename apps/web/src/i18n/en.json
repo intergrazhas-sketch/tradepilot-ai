@@ -164,6 +164,8 @@
   "listing.prepareCard": "Prepare listing",
   "listing.editorTitle": "Listing editor",
   "listing.generate": "Generate listing",
+  "listing.generateHint": "Regenerates the listing in the current interface language ({locale}). Raw product name and brand are kept as-is.",
+  "listing.regenerate": "Regenerate",
   "listing.title": "Title",
   "listing.description": "Description",
   "listing.bullets": "Benefits",

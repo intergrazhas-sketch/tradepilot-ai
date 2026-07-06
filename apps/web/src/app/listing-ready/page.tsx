@@ -38,6 +38,19 @@ export default function ListingReadyPage() {
     }
   };
 
+  const regenerateListing = async (id: string) => {
+    setBusyId(id);
+    setError(null);
+    try {
+      await api.generateProductListing(id);
+      load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <PageShell title={t("listing.readyTitle")} subtitle={t("listing.readySubtitle")}>
       {error && <ErrorBanner message={error} />}
@@ -77,6 +90,14 @@ export default function ListingReadyPage() {
                     <div className="flex flex-col gap-1.5">
                       <Button className="text-xs px-2 py-1 h-auto" onClick={() => setListingProduct(p)}>
                         {t("common.edit")}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className="text-xs px-2 py-1 h-auto"
+                        disabled={busyId === p.id}
+                        onClick={() => regenerateListing(p.id)}
+                      >
+                        {busyId === p.id ? t("common.loading") : t("listing.regenerate")}
                       </Button>
                       <Button
                         variant="secondary"

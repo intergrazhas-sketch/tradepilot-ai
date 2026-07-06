@@ -164,6 +164,8 @@
   "listing.prepareCard": "Подготовить карточку",
   "listing.editorTitle": "Редактор карточки",
   "listing.generate": "Сгенерировать карточку",
+  "listing.generateHint": "Перегенерирует карточку на языке интерфейса ({locale}). Название и бренд из прайса не переводятся.",
+  "listing.regenerate": "Перегенерировать",
   "listing.title": "Заголовок",
   "listing.description": "Описание",
   "listing.bullets": "Преимущества",

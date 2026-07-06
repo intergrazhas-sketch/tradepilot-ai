@@ -13,8 +13,10 @@ type Props = {
   onSaved: () => void;
 };
 
+const LOCALE_LABELS: Record<string, string> = { ru: "RU", en: "EN", kz: "KZ" };
+
 export function ProductListingModal({ product, open, onClose, onSaved }: Props) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [form, setForm] = useState({
     listing_title: "",
     listing_description: "",
@@ -62,6 +64,7 @@ export function ProductListingModal({ product, open, onClose, onSaved }: Props) 
         listing_notes: p.listing_notes || "",
       });
       setScore(p.listing_score || 0);
+      onSaved();
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -104,9 +107,14 @@ export function ProductListingModal({ product, open, onClose, onSaved }: Props) 
           <span className="text-ink-600">{product.name_ai || product.name_raw}</span>
           <span className="font-semibold text-brand-600">{t("listing.score")}: {score}</span>
         </div>
-        <Button variant="secondary" onClick={generate} disabled={generating} className="w-full">
-          {generating ? t("common.loading") : t("listing.generate")}
-        </Button>
+        <div className="space-y-1">
+          <Button variant="secondary" onClick={generate} disabled={generating} className="w-full">
+            {generating ? t("common.loading") : t("listing.generate")}
+          </Button>
+          <p className="text-xs text-ink-500 text-center">
+            {t("listing.generateHint").replace("{locale}", LOCALE_LABELS[locale] || locale.toUpperCase())}
+          </p>
+        </div>
         <Input label={t("listing.title")} value={form.listing_title} onChange={(e) => setForm({ ...form, listing_title: e.target.value })} />
         <Textarea label={t("listing.description")} rows={4} value={form.listing_description} onChange={(e) => setForm({ ...form, listing_description: e.target.value })} />
         <Textarea label={t("listing.bullets")} rows={4} value={form.listing_bullets} onChange={(e) => setForm({ ...form, listing_bullets: e.target.value })} placeholder={t("listing.bulletsHint")} />

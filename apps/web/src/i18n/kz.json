@@ -164,6 +164,8 @@
   "listing.prepareCard": "Карточканы дайындау",
   "listing.editorTitle": "Карточка редакторы",
   "listing.generate": "Карточканы генерациялау",
+  "listing.generateHint": "Карточканы интерфейс тілінде ({locale}) қайта генерациялайды. Прайстан алынған атау мен бренд өзгермейді.",
+  "listing.regenerate": "Қайта генерациялау",
   "listing.title": "Тақырып",
   "listing.description": "Сипаттама",
   "listing.bullets": "Артықшылықтар",
