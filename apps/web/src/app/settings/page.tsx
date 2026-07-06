@@ -52,18 +52,18 @@ export default function SettingsPage() {
               value={settings.language}
               onChange={(e) => setSettings({ ...settings, language: e.target.value })}
             >
-              <option value="ru">Русский</option>
-              <option value="kz">Қазақша</option>
-              <option value="en">English</option>
+              <option value="ru">{t("settings.langRu")}</option>
+              <option value="kz">{t("settings.langKz")}</option>
+              <option value="en">{t("settings.langEn")}</option>
             </Select>
             <Select
               label={t("settings.currency")}
               value={settings.currency}
               onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
             >
-              <option value="KZT">KZT — тенге</option>
-              <option value="USD">USD — доллар</option>
-              <option value="RUB">RUB — рубль</option>
+              <option value="KZT">{t("settings.currencyKzt")}</option>
+              <option value="USD">{t("settings.currencyUsd")}</option>
+              <option value="RUB">{t("settings.currencyRub")}</option>
             </Select>
             <Input
               label={t("settings.defaultMarkup")}
@@ -82,13 +82,12 @@ export default function SettingsPage() {
               <option value="business">Business</option>
             </Select>
             <p className="text-xs text-ink-500 -mt-2">
-              Поле зарезервировано для будущих тарифов SaaS-версии. Сейчас ни на что не влияет —
-              используется только для внутреннего учёта.
+              {t("settings.planReservedHint")}
             </p>
 
             <div className="flex items-center gap-3 pt-2">
               <Button onClick={save} disabled={saving}>{saving ? t("common.loading") : t("common.save")}</Button>
-              {saved && <span className="text-sm text-profit-500">Сохранено ✓</span>}
+              {saved && <span className="text-sm text-profit-500">{t("settings.saved")}</span>}
             </div>
           </div>
         </Card>

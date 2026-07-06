@@ -18,25 +18,25 @@ def _build_recommendations(db: Session) -> list[str]:
         (models.Product.description_ai.is_(None)) & (models.Product.description_raw.is_(None))
     ).count()
     if no_description:
-        recs.append(f"{no_description} товар(ов) без описания — запустите AI Product Studio, чтобы их улучшить.")
+        recs.append(f"noDescription:{no_description}")
 
     no_category = db.query(models.Product).filter(models.Product.category.is_(None)).count()
     if no_category:
-        recs.append(f"{no_category} товар(ов) без категории — AI может предложить категорию автоматически.")
+        recs.append(f"noCategory:{no_category}")
 
     low_stock = db.query(models.Product).filter(models.Product.stock_quantity <= LOW_STOCK_THRESHOLD).count()
     if low_stock:
-        recs.append(f"{low_stock} товар(ов) с низким остатком — уточните наличие у поставщика.")
+        recs.append(f"lowStock:{low_stock}")
 
     low_margin = [
         p for p in db.query(models.Product).all()
         if p.selling_price and calc_margin_percent(p.cost_price, p.selling_price) < 15
     ]
     if low_margin:
-        recs.append(f"{len(low_margin)} товар(ов) с маржой ниже 15% — рассмотрите пересчет цены через AI.")
+        recs.append(f"lowMargin:{len(low_margin)}")
 
     if not recs:
-        recs.append("Все основные показатели в норме. Загрузите больше товаров, чтобы расти дальше.")
+        recs.append("allGood")
 
     return recs
 

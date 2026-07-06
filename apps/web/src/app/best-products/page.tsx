@@ -8,6 +8,7 @@ import { ProductListingModal } from "@/components/ProductListingModal";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { translateDecisionReason } from "@/lib/app-text";
 import type { Product, Supplier } from "@/types";
 
 type SortBy = "score" | "profit" | "margin";
@@ -86,7 +87,7 @@ export default function BestProductsPage() {
               <tr className="border-b border-line text-left text-xs text-ink-500">
                 <th className="px-4 py-3 font-medium">{t("products.name")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.supplier")}</th>
-                <th className="px-4 py-3 font-medium">SKU</th>
+                <th className="px-4 py-3 font-medium">{t("orders.sku")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.cost")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.price")}</th>
                 <th className="px-4 py-3 font-medium">{t("products.profit")}</th>
@@ -104,7 +105,7 @@ export default function BestProductsPage() {
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       <DecisionBadge status="good" label={t("decision.good")} />
                       <TestStatusBadge status={p.test_status} label={testLabel(p.test_status)} />
-                      <span className="text-xs text-ink-500">{Math.round(p.decision_score)} pts</span>
+                      <span className="text-xs text-ink-500">{Math.round(p.decision_score)} {t("decision.pointsUnit")}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-ink-700">{supplierName(p.supplier_id)}</td>
@@ -114,7 +115,7 @@ export default function BestProductsPage() {
                   <td className="px-4 py-3 text-profit-500 font-medium">{formatMoney(p.gross_profit, p.currency)}</td>
                   <td className="px-4 py-3">{formatPercent(p.margin_percent)}</td>
                   <td className="px-4 py-3">{p.stock_quantity}</td>
-                  <td className="px-4 py-3 text-xs text-ink-600 max-w-[160px]">{p.decision_reason}</td>
+                  <td className="px-4 py-3 text-xs text-ink-600 max-w-[160px]">{translateDecisionReason(t, p.decision_reason)}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col gap-1.5">
                       <Button variant="secondary" className="!px-2 !py-1 text-xs" disabled={busyId === p.id} onClick={() => setListingProduct(p)}>

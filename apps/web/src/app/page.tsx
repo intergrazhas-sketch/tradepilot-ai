@@ -7,6 +7,7 @@ import { Card, StatCard, StatusBadge, DecisionBadge, Button, Spinner, EmptyState
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatDate, formatPercent } from "@/lib/format";
+import { statusLabel, translateRecommendation } from "@/lib/app-text";
 import type { DashboardSummary, AnalyticsSummary, WorkflowHints, OrdersSummary, SupplierDiscoverySummary, SupplierSearchSummary, ListingSummary, TestLaunchSummary, LaunchControlSummary } from "@/types";
 
 export default function DashboardPage() {
@@ -232,7 +233,7 @@ export default function DashboardPage() {
                           <div className="text-sm font-medium text-ink-900">{formatMoney(order.total_amount)}</div>
                           <div className="text-xs text-profit-500">+{formatMoney(order.profit_amount)}</div>
                         </div>
-                        <StatusBadge status={order.status} />
+                        <StatusBadge status={order.status} label={statusLabel(t, order.status, "order")} />
                       </div>
                     </div>
                   ))}
@@ -248,7 +249,7 @@ export default function DashboardPage() {
               <ul className="space-y-3">
                 {data.ai_recommendations.map((rec, i) => (
                   <li key={i} className="text-sm text-ink-700 bg-brand-50/60 border border-brand-100 rounded-lg px-3 py-2.5">
-                    {rec}
+                    {translateRecommendation(t, rec)}
                   </li>
                 ))}
               </ul>

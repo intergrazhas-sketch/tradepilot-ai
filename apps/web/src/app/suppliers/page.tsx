@@ -6,6 +6,7 @@ import { Card, Button, Modal, Input, Textarea, StatusBadge, Spinner, EmptyState,
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { statusLabel as resolveStatusLabel } from "@/lib/app-text";
 import type { Supplier, SupplierAnalyticsItem } from "@/types";
 
 const EMPTY_FORM = { name: "", contact_name: "", phone: "", email: "", country: "", city: "", notes: "" };
@@ -87,7 +88,7 @@ export default function SuppliersPage() {
                   <td className="px-4 py-3 text-ink-700">{st ? formatPercent(st.average_margin_percent) : "—"}</td>
                   <td className="px-4 py-3 text-ink-700">{st ? formatMoney(st.total_potential_profit) : "—"}</td>
                   <td className="px-4 py-3 font-semibold text-ink-900">{st ? Math.round(st.supplier_score) : "—"}</td>
-                  <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
+                  <td className="px-4 py-3"><StatusBadge status={s.status} label={resolveStatusLabel(t, s.status, "supplier")} /></td>
                 </tr>
               );})}
             </tbody>

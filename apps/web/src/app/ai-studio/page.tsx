@@ -6,6 +6,7 @@ import { Card, Button, Select, Spinner, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { emptyDisplay } from "@/lib/app-text";
 import type { Product } from "@/types";
 
 export default function AIStudioPage() {
@@ -92,8 +93,8 @@ export default function AIStudioPage() {
             <h3 className="font-semibold text-ink-900 mb-3 text-sm">{t("aiStudio.before")}</h3>
             <div className="space-y-3 text-sm">
               <Field label={t("products.name")} value={selected.name_raw} />
-              <Field label="Описание" value={selected.description_raw || "—"} multiline />
-              <Field label={t("products.filterByCategory")} value={selected.category || "—"} />
+              <Field label={t("products.description")} value={emptyDisplay(t, selected.description_raw)} multiline />
+              <Field label={t("products.filterByCategory")} value={emptyDisplay(t, selected.category)} />
               <Field label={t("products.price")} value={formatMoney(selected.cost_price, selected.currency)} />
             </div>
           </Card>
@@ -105,13 +106,13 @@ export default function AIStudioPage() {
             </h3>
             <div className="space-y-3 text-sm">
               <Field label={t("products.name")} value={result?.title?.after || selected.name_ai || "—"} highlight />
-              <Field label="Описание" value={result?.description?.after || selected.description_ai || "—"} multiline highlight />
-              <Field label={t("products.filterByCategory")} value={result?.category?.suggested_category || selected.category || "—"} highlight />
+              <Field label={t("products.description")} value={emptyDisplay(t, result?.description?.after || selected.description_ai)} multiline highlight />
+              <Field label={t("products.filterByCategory")} value={emptyDisplay(t, result?.category?.suggested_category || selected.category)} highlight />
               <Field
                 label={t("products.price")}
                 value={
                   result?.price
-                    ? `${formatMoney(result.price.recommended_price, selected.currency)} (маржа ${formatPercent(result.price.margin_percent)})`
+                    ? `${formatMoney(result.price.recommended_price, selected.currency)} (${t("aiStudio.marginSuffix").replace("{margin}", formatPercent(result.price.margin_percent))})`
                     : formatMoney(selected.selling_price, selected.currency)
                 }
                 highlight

@@ -5,6 +5,7 @@ import { PageShell } from "@/components/PageShell";
 import { Card, StatusBadge, Spinner, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
+import { statusLabel as resolveStatusLabel } from "@/lib/app-text";
 import type { Channel } from "@/types";
 
 const CHANNEL_ICONS: Record<string, string> = {
@@ -41,14 +42,14 @@ export default function ChannelsPage() {
                 <div className="font-medium text-ink-900 text-sm">{c.name}</div>
                 <div className="text-xs text-ink-500 capitalize">{c.type.replace("_", " ")}</div>
               </div>
-              <StatusBadge status={c.status} />
+              <StatusBadge status={c.status} label={resolveStatusLabel(t, c.status, "channel")} />
             </Card>
           ))}
         </div>
       )}
 
       <p className="text-xs text-ink-500 mt-6">
-        Реальные интеграции с маркетплейсами появятся в следующих версиях. Модель данных уже готова для подключения.
+        {t("channels.comingSoonHint")}
       </p>
     </PageShell>
   );

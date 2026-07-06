@@ -10,27 +10,73 @@ from app.services.decision_service import product_snapshot
 from app.services.pricing import calc_margin_percent
 
 VALID_LISTING_STATUSES = {"draft", "ready", "needs_review"}
+SUPPORTED_LOCALES = {"ru", "en", "kz"}
+
+
+def _normalize_locale(locale: str | None) -> str:
+    value = (locale or "ru").lower().strip()
+    return value if value in SUPPORTED_LOCALES else "ru"
 
 
 def _display_name(product) -> str:
     return (product.name_ai or product.name_raw or "").strip()
 
 
-def _build_bullets(product, snap: dict) -> list[str]:
+def _build_bullets(product, snap: dict, locale: str) -> list[str]:
+    loc = _normalize_locale(locale)
     bullets: list[str] = []
     name = _display_name(product)
-    if product.brand:
-        bullets.append(f"Бренд {product.brand} — проверенное качество")
-    if product.category:
-        bullets.append(f"Категория: {product.category} — подходит для быстрых продаж")
-    if snap["margin_percent"] >= 20:
-        bullets.append(f"Выгодная маржа {snap['margin_percent']:.0f}% — хороший потенциал прибыли")
+    brand = product.brand
+    category = product.category
+    margin = snap["margin_percent"]
+    currency = product.currency or "KZT"
+
+    if loc == "en":
+        if brand:
+            bullets.append(f"Brand {brand} — trusted quality")
+        if category:
+            bullets.append(f"Category: {category} — suitable for quick sales tests")
+        if margin >= 20:
+            bullets.append(f"Strong margin {margin:.0f}% — good profit potential")
+        elif snap["gross_profit"] > 0:
+            bullets.append("Positive profit on every sale")
+        if product.stock_quantity and product.stock_quantity > 0:
+            bullets.append(f"In stock: {product.stock_quantity} pcs")
+        if product.selling_price and product.selling_price > 0:
+            bullets.append(f"Price {product.selling_price:.0f} {currency} — ready to publish")
+        if not bullets:
+            bullets.append(f"{name} — product for test sales without warehouse")
+        return bullets[:5]
+
+    if loc == "kz":
+        if brand:
+            bullets.append(f"{brand} бренді — сенімді сапа")
+        if category:
+            bullets.append(f"Санат: {category} — жылдам сату тесті үшін")
+        if margin >= 20:
+            bullets.append(f"Тиімді маржа {margin:.0f}% — жақсы пайда әлеуеті")
+        elif snap["gross_profit"] > 0:
+            bullets.append("Әр сатудан оң пайда")
+        if product.stock_quantity and product.stock_quantity > 0:
+            bullets.append(f"Қоймада: {product.stock_quantity} дана")
+        if product.selling_price and product.selling_price > 0:
+            bullets.append(f"Баға {product.selling_price:.0f} {currency} — жариялауға дайын")
+        if not bullets:
+            bullets.append(f"{name} — қоймасыз сату тесті үшін тауар")
+        return bullets[:5]
+
+    if brand:
+        bullets.append(f"Бренд {brand} — проверенное качество")
+    if category:
+        bullets.append(f"Категория: {category} — подходит для быстрых продаж")
+    if margin >= 20:
+        bullets.append(f"Выгодная маржа {margin:.0f}% — хороший потенциал прибыли")
     elif snap["gross_profit"] > 0:
-        bullets.append(f"Положительная прибыль с каждой продажи")
+        bullets.append("Положительная прибыль с каждой продажи")
     if product.stock_quantity and product.stock_quantity > 0:
         bullets.append(f"В наличии: {product.stock_quantity} шт.")
     if product.selling_price and product.selling_price > 0:
-        bullets.append(f"Цена {product.selling_price:.0f} {product.currency or 'KZT'} — готово к публикации")
+        bullets.append(f"Цена {product.selling_price:.0f} {currency} — готово к публикации")
     if not bullets:
         bullets.append(f"{name} — товар для тестовых продаж без склада")
     return bullets[:5]
@@ -87,26 +133,21 @@ def resolve_listing_status(score: int, snap: dict) -> str:
     return "draft"
 
 
-def generate_product_listing(product) -> dict:
+def generate_product_listing(product, locale: str = "ru") -> dict:
     """Generate listing fields; reuses AI provider when configured, else rule-based mock."""
+    loc = _normalize_locale(locale)
     snap = product_snapshot(product)
     settings = get_settings()
     provider = get_ai_provider()
     use_ai_label = settings.AI_PROVIDER == "openai" and bool(settings.OPENAI_API_KEY)
 
     base_name = product.name_raw or ""
-    try:
-        title = provider.improve_title(base_name, product.brand, product.category)
-    except NotImplementedError:
-        title = provider.improve_title(base_name, product.brand, product.category)
+    title = provider.improve_title(base_name, product.brand, product.category, locale=loc)
 
     desc_source = product.description_ai or product.description_raw
-    try:
-        description = provider.improve_description(title, desc_source, product.brand)
-    except NotImplementedError:
-        description = provider.improve_description(title, desc_source, product.brand)
+    description = provider.improve_description(title, desc_source, product.brand, locale=loc)
 
-    bullets = _build_bullets(product, snap)
+    bullets = _build_bullets(product, snap, loc)
     keywords = _build_keywords(product)
 
     product.listing_title = title
@@ -124,9 +165,9 @@ def generate_product_listing(product) -> dict:
     product.listing_status = resolve_listing_status(score, snap)
     product.last_listing_generated_at = datetime.utcnow()
 
-    notes = "Rule-based listing" if not use_ai_label else "AI-assisted listing"
+    notes = "listing.notes.rules" if not use_ai_label else "listing.notes.ai"
     if snap["decision_status"] != "good":
-        notes += f"; decision={snap['decision_status']}"
+        notes += f";decision={snap['decision_status']}"
     product.listing_notes = notes
 
     return {

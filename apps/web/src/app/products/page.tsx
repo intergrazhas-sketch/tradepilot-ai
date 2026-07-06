@@ -8,6 +8,7 @@ import { ProductListingModal, listingStatusLabel } from "@/components/ProductLis
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { translateDecisionReason, emptyDisplay } from "@/lib/app-text";
 import type { Product, Supplier } from "@/types";
 
 type DecisionFilter = "" | "good" | "risk" | "bad";
@@ -192,7 +193,7 @@ function ProductsPage() {
                 <tr key={p.id} className="border-b border-line last:border-0 hover:bg-canvas/50 align-top">
                   <td className="px-4 py-3">
                     <div className="font-medium text-ink-900">{p.name_ai || p.name_raw}</div>
-                    <div className="text-xs text-ink-500 mb-1.5">{p.sku || "—"} · {p.category || "Без категории"}</div>
+                    <div className="text-xs text-ink-500 mb-1.5">{emptyDisplay(t, p.sku)} · {p.category || t("products.noCategory")}</div>
                     <div className="flex flex-wrap gap-1.5">
                       <DecisionBadge status={p.decision_status} label={decisionLabel(p.decision_status)} />
                       <TestStatusBadge status={p.test_status} label={testLabel(p.test_status)} />
@@ -203,7 +204,7 @@ function ProductsPage() {
                       ) : null}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-xs text-ink-600 max-w-[180px]">{p.decision_reason || "—"}</td>
+                  <td className="px-4 py-3 text-xs text-ink-600 max-w-[180px]">{translateDecisionReason(t, p.decision_reason)}</td>
                   <td className="px-4 py-3 text-ink-700">{supplierName(p.supplier_id)}</td>
                   <td className="px-4 py-3 text-ink-700">{formatMoney(p.cost_price, p.currency)}</td>
                   <td className="px-4 py-3 font-medium text-ink-900">{formatMoney(p.selling_price, p.currency)}</td>

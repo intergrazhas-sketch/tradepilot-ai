@@ -342,7 +342,10 @@ export default function SupplierSearchPage() {
               {lastLead && (
                 <div className="mb-4 p-3 rounded-lg bg-profit-50 border border-profit-500/20 text-sm">
                   <span className="text-profit-600 font-medium">{t("supplierSearch.leadSaved")}: </span>
-                  {lastLead.name} — score {lastLead.supplier_fit_score}
+                  {t("supplierSearch.leadSavedWithScore")
+                    .replace("{name}", lastLead.name)
+                    .replace("{scoreLabel}", t("supplierSearch.scoreLabel"))
+                    .replace("{score}", String(lastLead.supplier_fit_score))}
                   <Link href="/supplier-discovery" className="ml-2 text-brand-600 hover:underline text-xs">
                     {t("nav.supplierDiscovery")}
                   </Link>
@@ -464,7 +467,7 @@ export default function SupplierSearchPage() {
             <Input label={t("suppliers.phone")} value={resultForm.contact_phone} onChange={(e) => setResultForm({ ...resultForm, contact_phone: e.target.value })} />
             <Input label={t("suppliers.email")} value={resultForm.contact_email} onChange={(e) => setResultForm({ ...resultForm, contact_email: e.target.value })} />
           </div>
-          <Input label="WhatsApp" value={resultForm.whatsapp} onChange={(e) => setResultForm({ ...resultForm, whatsapp: e.target.value })} />
+          <Input label={t("common.whatsapp")} value={resultForm.whatsapp} onChange={(e) => setResultForm({ ...resultForm, whatsapp: e.target.value })} />
           <label className="flex items-center gap-2 text-sm text-ink-700">
             <input
               type="checkbox"

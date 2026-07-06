@@ -16,7 +16,7 @@ def evaluate_product_decision(
     stock_quantity: int = 0,
     markup_percent: float | None = None,
 ) -> tuple[str, float, str]:
-    """Returns (decision_status, decision_score, decision_reason)."""
+    """Returns (decision_status, decision_score, decision_reason_code)."""
     cost = cost_price or 0
     sell = selling_price or 0
     stock = stock_quantity or 0
@@ -25,27 +25,27 @@ def evaluate_product_decision(
     markup = markup_percent if markup_percent is not None else calc_markup_percent(cost, sell)
 
     if sell <= 0:
-        return "bad", 5.0, "Цена продажи не задана"
+        return "bad", 5.0, "no_selling_price"
     if cost <= 0:
-        return "bad", 10.0, "Закупочная цена не задана"
+        return "bad", 10.0, "no_cost_price"
     if gross < 0:
-        return "bad", 15.0, "Отрицательная прибыль"
+        return "bad", 15.0, "negative_profit"
     if margin < 10:
-        return "bad", 30.0, f"Маржа ниже 10% ({margin}%)"
+        return "bad", 30.0, f"margin_below_10:{margin}"
 
     risk_parts: list[str] = []
     if margin < 20:
-        risk_parts.append(f"Маржа {margin}% — зона риска (10–20%)")
+        risk_parts.append(f"margin_risk_zone:{margin}")
     if stock <= 0:
-        risk_parts.append("Нет остатка на складе")
+        risk_parts.append("no_stock")
     if markup < LOW_MARKUP_THRESHOLD:
-        risk_parts.append(f"Низкая наценка ({markup}%)")
+        risk_parts.append(f"low_markup:{markup}")
 
     if gross > 0 and margin >= 20 and stock > 0 and not risk_parts:
         score = min(100.0, max(70.0, round(72 + margin * 0.6 + min(stock, 10), 1)))
-        return "good", score, "Выгодный товар — можно тестировать"
+        return "good", score, "profitable_for_test"
 
-    reason = "; ".join(risk_parts) if risk_parts else "Требует проверки перед запуском"
+    reason = "|".join(risk_parts) if risk_parts else "needs_review"
     score = min(69.0, max(40.0, round(42 + margin + (8 if stock > 0 else 0), 1)))
     return "risk", score, reason
 

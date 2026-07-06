@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -129,11 +129,12 @@ def get_product_listing(product_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{product_id}/generate-listing", response_model=schemas.ProductListingGenerateResponse)
-def generate_listing(product_id: str, db: Session = Depends(get_db)):
+def generate_listing(product_id: str, request: Request, db: Session = Depends(get_db)):
     product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not product:
         raise HTTPException(404, "Product not found")
-    meta = generate_product_listing(product)
+    locale = (request.headers.get("X-Locale") or "ru").lower()
+    meta = generate_product_listing(product, locale=locale)
     db.commit()
     db.refresh(product)
     return schemas.ProductListingGenerateResponse(

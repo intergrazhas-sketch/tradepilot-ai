@@ -1,4 +1,7 @@
+"use client";
+
 import { ReactNode } from "react";
+import { useI18n } from "@/lib/i18n-context";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
@@ -54,32 +57,6 @@ const STATUS_STYLES: Record<string, string> = {
   rejected: "bg-danger-50 text-danger-500",
 };
 
-const STATUS_LABELS_RU: Record<string, string> = {
-  active: "Активен",
-  draft: "Черновик",
-  archived: "Архив",
-  paused: "Пауза",
-  new: "Новый",
-  confirmed: "Подтверждён",
-  supplier_ordered: "У поставщика",
-  delivered: "Доставлен",
-  cancelled: "Отменён",
-  sent_to_supplier: "У поставщика",
-  shipped: "У поставщика",
-  completed: "Доставлен",
-  not_connected: "Не подключен",
-  planned: "Запланирован",
-  connected: "Подключен",
-
-  reviewed: "Проверен",
-  added_to_suppliers: "В поставщиках",
-  rejected: "Отклонён",
-
-  good: "Хороший",
-  risk: "Риск",
-  bad: "Плохой",
-};
-
 export function TestStatusBadge({ status, label }: { status: string; label?: string }) {
   const styles: Record<string, string> = {
     candidate: "bg-brand-50 text-brand-600",
@@ -101,21 +78,15 @@ export function DecisionBadge({ status, label }: { status: string; label?: strin
     risk: "bg-warn-50 text-warn-500",
     bad: "bg-danger-50 text-danger-500",
   };
-  const fallback: Record<string, string> = {
-    good: STATUS_LABELS_RU.good,
-    risk: STATUS_LABELS_RU.risk,
-    bad: STATUS_LABELS_RU.bad,
-  };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] || "bg-ink-300/20 text-ink-500"}`}>
-      {label || fallback[status] || status}
+      {label || status}
     </span>
   );
 }
 
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status, label }: { status: string; label: string }) {
   const style = STATUS_STYLES[status] || "bg-ink-300/20 text-ink-500";
-  const label = STATUS_LABELS_RU[status] || status;
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${style}`}>
       {label}
@@ -224,9 +195,10 @@ export function Select({
 }
 
 export function ErrorBanner({ message }: { message: string }) {
+  const { t } = useI18n();
   return (
     <div className="mb-4 px-4 py-3 rounded-lg bg-danger-50 text-danger-500 text-sm">
-      Не удалось загрузить данные. Проверьте backend API. ({message})
+      {t("common.loadError")} ({message})
     </div>
   );
 }

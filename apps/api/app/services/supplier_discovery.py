@@ -40,60 +40,52 @@ def calc_supplier_fit_score(
 
     if has_open_price_list or (price_list_url or "").strip():
         score += 25
-        pros.append("открытый прайс")
+        pros.append("open_price")
     else:
         score -= 15
-        cons.append("нет прайса")
+        cons.append("no_price_list")
 
     if has_wholesale_terms:
         score += 20
-        pros.append("оптовые условия")
+        pros.append("wholesale_terms")
     else:
         score -= 10
-        cons.append("нет признаков опта")
+        cons.append("no_wholesale_signs")
 
     contacts = sum(
         1 for c in (contact_phone, contact_email, whatsapp) if (c or "").strip()
     )
     if contacts >= 2:
         score += 25
-        pros.append("несколько контактов")
+        pros.append("multiple_contacts")
     elif contacts == 1:
         score += 15
-        pros.append("есть контакт")
+        pros.append("has_contact")
     else:
         score -= 20
-        cons.append("нет контактов")
+        cons.append("no_contacts")
 
     if (delivery_info or "").strip():
         score += 10
-        pros.append("есть доставка")
+        pros.append("has_delivery")
 
     if _category_fits_quick_test(category):
         score += 15
-        pros.append("категория для быстрого теста")
+        pros.append("quick_test_category")
 
     moq = min_order_quantity
     if moq is not None:
         if moq <= LOW_MOQ:
             score += 15
-            pros.append(f"низкий MOQ ({moq})")
+            pros.append(f"low_moq:{moq}")
         elif moq <= MID_MOQ:
             score += 8
-            pros.append(f"умеренный MOQ ({moq})")
+            pros.append(f"moderate_moq:{moq}")
         elif moq > HIGH_MOQ:
             score -= 15
-            cons.append(f"высокий MOQ ({moq})")
+            cons.append(f"high_moq:{moq}")
 
     score = max(0, min(100, score))
 
-    if pros and not cons:
-        reason = "Подходит: " + ", ".join(pros[:4])
-    elif cons and not pros:
-        reason = "Риск: " + ", ".join(cons[:4])
-    else:
-        reason = "Плюсы: " + ", ".join(pros[:3]) if pros else ""
-        if cons:
-            reason += ("; минусы: " + ", ".join(cons[:3])) if reason else "Минусы: " + ", ".join(cons[:3])
-
+    reason = f"fit|{'+'.join(pros)}|{'+'.join(cons)}"
     return score, reason.strip()

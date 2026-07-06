@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -24,11 +24,17 @@ def _log_job(db: Session, job_type: str, input_data: dict, output_data: dict):
     db.commit()
 
 
+def _locale(request: Request) -> str:
+    value = (request.headers.get("X-Locale") or "ru").lower()
+    return value if value in {"ru", "en", "kz"} else "ru"
+
+
 @router.post("/products/improve-title", response_model=schemas.AITitleResult)
-def improve_title(payload: schemas.AIProductRequest, db: Session = Depends(get_db)):
+def improve_title(payload: schemas.AIProductRequest, request: Request, db: Session = Depends(get_db)):
     product = _get_product(db, payload.product_id)
     ai = get_ai_provider()
-    new_title = ai.improve_title(product.name_raw, product.brand, product.category)
+    locale = _locale(request)
+    new_title = ai.improve_title(product.name_raw, product.brand, product.category, locale=locale)
 
     product.name_ai = new_title
     db.commit()
@@ -38,11 +44,12 @@ def improve_title(payload: schemas.AIProductRequest, db: Session = Depends(get_d
 
 
 @router.post("/products/improve-description", response_model=schemas.AIDescriptionResult)
-def improve_description(payload: schemas.AIProductRequest, db: Session = Depends(get_db)):
+def improve_description(payload: schemas.AIProductRequest, request: Request, db: Session = Depends(get_db)):
     product = _get_product(db, payload.product_id)
     ai = get_ai_provider()
+    locale = _locale(request)
     new_description = ai.improve_description(
-        product.name_ai or product.name_raw, product.description_raw, product.brand
+        product.name_ai or product.name_raw, product.description_raw, product.brand, locale=locale
     )
 
     product.description_ai = new_description
@@ -53,11 +60,12 @@ def improve_description(payload: schemas.AIProductRequest, db: Session = Depends
 
 
 @router.post("/products/suggest-category", response_model=schemas.AICategoryResult)
-def suggest_category(payload: schemas.AIProductRequest, db: Session = Depends(get_db)):
+def suggest_category(payload: schemas.AIProductRequest, request: Request, db: Session = Depends(get_db)):
     product = _get_product(db, payload.product_id)
     ai = get_ai_provider()
+    locale = _locale(request)
     category, confidence = ai.suggest_category(
-        product.name_ai or product.name_raw, product.description_ai or product.description_raw
+        product.name_ai or product.name_raw, product.description_ai or product.description_raw, locale=locale
     )
 
     product.category = category
@@ -68,11 +76,12 @@ def suggest_category(payload: schemas.AIProductRequest, db: Session = Depends(ge
 
 
 @router.post("/products/suggest-price", response_model=schemas.AIPriceResult)
-def suggest_price(payload: schemas.AIProductRequest, db: Session = Depends(get_db)):
+def suggest_price(payload: schemas.AIProductRequest, request: Request, db: Session = Depends(get_db)):
     product = _get_product(db, payload.product_id)
     ai = get_ai_provider()
+    locale = _locale(request)
     price, markup, margin, explanation = ai.suggest_price(
-        product.cost_price, settings.DEFAULT_MARKUP_PERCENT, settings.DEFAULT_MIN_MARGIN_PERCENT
+        product.cost_price, settings.DEFAULT_MARKUP_PERCENT, settings.DEFAULT_MIN_MARGIN_PERCENT, locale=locale
     )
 
     product.selling_price = price
@@ -90,22 +99,23 @@ def suggest_price(payload: schemas.AIProductRequest, db: Session = Depends(get_d
 
 
 @router.post("/products/full-optimize", response_model=schemas.AIFullOptimizeResult)
-def full_optimize(payload: schemas.AIProductRequest, db: Session = Depends(get_db)):
+def full_optimize(payload: schemas.AIProductRequest, request: Request, db: Session = Depends(get_db)):
     product = _get_product(db, payload.product_id)
     ai = get_ai_provider()
+    locale = _locale(request)
 
     title_before = product.name_raw
-    new_title = ai.improve_title(product.name_raw, product.brand, product.category)
+    new_title = ai.improve_title(product.name_raw, product.brand, product.category, locale=locale)
     product.name_ai = new_title
 
-    new_description = ai.improve_description(new_title, product.description_raw, product.brand)
+    new_description = ai.improve_description(new_title, product.description_raw, product.brand, locale=locale)
     product.description_ai = new_description
 
-    category, confidence = ai.suggest_category(new_title, new_description)
+    category, confidence = ai.suggest_category(new_title, new_description, locale=locale)
     product.category = category
 
     price, markup, margin, explanation = ai.suggest_price(
-        product.cost_price, settings.DEFAULT_MARKUP_PERCENT, settings.DEFAULT_MIN_MARGIN_PERCENT
+        product.cost_price, settings.DEFAULT_MARKUP_PERCENT, settings.DEFAULT_MIN_MARGIN_PERCENT, locale=locale
     )
     product.selling_price = price
     product.markup_percent = markup

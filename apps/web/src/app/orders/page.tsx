@@ -7,6 +7,7 @@ import { Card, Select, StatusBadge, Button, StatCard, Spinner, EmptyState, Error
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatDate, formatPercent } from "@/lib/format";
+import { statusLabel as resolveStatusLabel } from "@/lib/app-text";
 import { ORDER_STATUSES, type Order, type OrdersSummary } from "@/types";
 
 const STATUS_ACTIONS: { status: string; key: string; variant?: "secondary" | "ghost" }[] = [
@@ -51,11 +52,7 @@ export default function OrdersPage() {
     }
   };
 
-  const statusLabel = (status: string) => {
-    const key = `orderStatus.${status}`;
-    const label = t(key);
-    return label === key ? status : label;
-  };
+  const orderStatusLabel = (status: string) => resolveStatusLabel(t, status, "order");
 
   const productLabel = (o: Order) => o.product_name || t("orders.unknownProduct");
 
@@ -78,7 +75,7 @@ export default function OrdersPage() {
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="max-w-[220px]">
           <option value="">{t("orders.filterAll")}</option>
-          {ORDER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
+          {ORDER_STATUSES.map((s) => <option key={s} value={s}>{orderStatusLabel(s)}</option>)}
         </Select>
         <div className="flex flex-wrap gap-1.5">
           {ORDER_STATUSES.map((s) => (
@@ -92,7 +89,7 @@ export default function OrdersPage() {
                   : "border-line text-ink-600 hover:bg-canvas"
               }`}
             >
-              {statusLabel(s)}
+              {orderStatusLabel(s)}
             </button>
           ))}
         </div>
@@ -138,7 +135,7 @@ export default function OrdersPage() {
                   <td className="px-4 py-3 text-profit-500 font-medium">{formatMoney(o.gross_profit ?? o.profit_amount)}</td>
                   <td className="px-4 py-3 text-ink-700">{formatPercent(o.margin_percent)}</td>
                   <td className="px-4 py-3">
-                    <StatusBadge status={o.status} />
+                    <StatusBadge status={o.status} label={orderStatusLabel(o.status)} />
                   </td>
                   <td className="px-4 py-3 text-xs text-ink-500 whitespace-nowrap">{formatDate(o.created_at)}</td>
                   <td className="px-4 py-3">

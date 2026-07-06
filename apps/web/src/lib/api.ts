@@ -9,6 +9,12 @@ function resolveApiBase(): string {
 
 export const API_BASE = resolveApiBase();
 
+function localeHeaders(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  const locale = window.localStorage.getItem("tradepilot.locale");
+  return locale ? { "X-Locale": locale } : {};
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
@@ -16,6 +22,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       ...(options?.body && !(options.body instanceof FormData)
         ? { "Content-Type": "application/json" }
         : {}),
+      ...localeHeaders(),
       ...options?.headers,
     },
     cache: "no-store",

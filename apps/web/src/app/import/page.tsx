@@ -7,15 +7,50 @@ import { Card, Button, Select, Spinner, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
+import { translateImportError } from "@/lib/app-text";
 import type { Supplier, ImportPreviewResponse, ImportCommitResponse } from "@/types";
 
-const SAMPLE_ROWS: string[][] = [
-  ["sku", "name", "description", "category", "brand", "cost_price", "stock_quantity", "currency", "image_url"],
-  ["EL-9001", "Bluetooth TWS Headphones", "Wireless earbuds with charging case", "Electronics", "SoundMax", "4500", "20", "KZT", ""],
-  ["HM-9002", "Cookware Set 3 pcs", "Non-stick coating", "Home & Kitchen", "HomeStyle", "12000", "5", "KZT", ""],
+const SAMPLE_HEADERS = [
+  "sku",
+  "name",
+  "description",
+  "category",
+  "brand",
+  "cost_price",
+  "stock_quantity",
+  "currency",
+  "image_url",
 ];
 
 const CSV_DELIMITER = ";";
+
+function buildSampleRows(t: (key: string) => string): string[][] {
+  return [
+    SAMPLE_HEADERS,
+    [
+      "EL-9001",
+      t("import.sampleProduct1Name"),
+      t("import.sampleProduct1Description"),
+      t("import.sampleProduct1Category"),
+      "SoundMax",
+      "4500",
+      "20",
+      "KZT",
+      "",
+    ],
+    [
+      "HM-9002",
+      t("import.sampleProduct2Name"),
+      t("import.sampleProduct2Description"),
+      t("import.sampleProduct2Category"),
+      "HomeStyle",
+      "12000",
+      "5",
+      "KZT",
+      "",
+    ],
+  ];
+}
 
 function escapeCsvCell(value: string): string {
   if (value.includes(CSV_DELIMITER) || value.includes('"') || value.includes("\n") || value.includes("\r")) {
@@ -24,8 +59,8 @@ function escapeCsvCell(value: string): string {
   return value;
 }
 
-function buildSampleCsv(): string {
-  return SAMPLE_ROWS.map((row) => row.map(escapeCsvCell).join(CSV_DELIMITER)).join("\r\n");
+function buildSampleCsv(rows: string[][]): string {
+  return rows.map((row) => row.map(escapeCsvCell).join(CSV_DELIMITER)).join("\r\n");
 }
 
 const ROW_STATUS_CLASS: Record<string, string> = {
@@ -93,7 +128,7 @@ export default function ImportPage() {
 
   const downloadSample = () => {
     const bom = "\uFEFF";
-    const blob = new Blob([bom + buildSampleCsv()], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob([bom + buildSampleCsv(buildSampleRows(t))], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -225,7 +260,7 @@ export default function ImportPage() {
                       </span>
                       {row.error && (
                         <div className="text-xs text-danger-600 mt-1 font-medium">
-                          ⚠ {row.error}
+                          ⚠ {translateImportError(t, row.error)}
                         </div>
                       )}
                     </td>

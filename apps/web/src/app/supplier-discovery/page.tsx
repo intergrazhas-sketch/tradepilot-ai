@@ -6,6 +6,7 @@ import { PageShell } from "@/components/PageShell";
 import { Card, Button, Modal, Input, Textarea, StatusBadge, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
+import { statusLabel as resolveStatusLabel, translateSupplierFitReason } from "@/lib/app-text";
 import type { SupplierLead, SupplierLeadFilter } from "@/types";
 
 const FILTERS: SupplierLeadFilter[] = ["all", "open_price", "wholesale", "high_score", "new", "rejected"];
@@ -167,7 +168,7 @@ export default function SupplierDiscoveryPage() {
             <div className="text-xs text-ink-600 space-y-0.5 mb-3">
               {l.contact_phone && <div>{t("suppliers.phone")}: {l.contact_phone}</div>}
               {l.contact_email && <div>{t("suppliers.email")}: {l.contact_email}</div>}
-              {l.whatsapp && <div>WhatsApp: {l.whatsapp}</div>}
+              {l.whatsapp && <div>{t("common.whatsapp")}: {l.whatsapp}</div>}
             </div>
             <div className="flex flex-wrap gap-1.5 mb-3">
               {l.has_open_price_list && (
@@ -177,14 +178,14 @@ export default function SupplierDiscoveryPage() {
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-50 text-brand-600">{t("supplierDiscovery.wholesale")}</span>
               )}
               {l.min_order_quantity != null && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-canvas text-ink-600">MOQ {l.min_order_quantity}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-canvas text-ink-600">{t("supplierDiscovery.moqBadge").replace("{qty}", String(l.min_order_quantity))}</span>
               )}
             </div>
             {l.supplier_fit_reason && (
-              <p className="text-xs text-ink-500 mb-3 line-clamp-2">{l.supplier_fit_reason}</p>
+              <p className="text-xs text-ink-500 mb-3 line-clamp-2">{translateSupplierFitReason(t, l.supplier_fit_reason)}</p>
             )}
             <div className="mb-3">
-              <StatusBadge status={l.discovery_status} />
+              <StatusBadge status={l.discovery_status} label={resolveStatusLabel(t, l.discovery_status, "discovery")} />
             </div>
             <div className="flex flex-wrap gap-1.5 mt-auto">
               {l.discovery_status !== "added_to_suppliers" && l.discovery_status !== "rejected" && (
@@ -232,7 +233,7 @@ export default function SupplierDiscoveryPage() {
             <Input label={t("suppliers.phone")} value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} />
             <Input label={t("suppliers.email")} value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} />
           </div>
-          <Input label="WhatsApp" value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} />
+          <Input label={t("common.whatsapp")} value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} />
           <label className="flex items-center gap-2 text-sm text-ink-700">
             <input
               type="checkbox"
