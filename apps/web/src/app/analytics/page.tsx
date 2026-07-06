@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageShell } from "@/components/PageShell";
 import { Card, StatCard, Spinner, ErrorBanner, EmptyState } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
 import type { ProfitAnalytics } from "@/types";
+
+const LOW_MARGIN_THRESHOLD_PERCENT = 15;
 
 export default function AnalyticsPage() {
   const { t } = useI18n();
@@ -16,6 +18,14 @@ export default function AnalyticsPage() {
   useEffect(() => {
     api.profitAnalytics().then(setData).catch((e) => setError(e.message));
   }, []);
+
+  const lowMarginProducts = useMemo(
+    () =>
+      (data?.low_margin_products ?? []).filter(
+        (p) => p.margin_percent < LOW_MARGIN_THRESHOLD_PERCENT,
+      ),
+    [data],
+  );
 
   return (
     <PageShell title={t("analytics.title")} subtitle={t("analytics.subtitle")}>
@@ -60,10 +70,13 @@ export default function AnalyticsPage() {
             </Card>
 
             <Card className="p-5">
-              <h3 className="font-semibold text-ink-900 mb-4">{t("analytics.lowMargin")}</h3>
-              {data.low_margin_products.length === 0 ? <EmptyState title={t("common.empty")} /> : (
+              <h3 className="font-semibold text-ink-900 mb-1">{t("analytics.lowMargin")}</h3>
+              <p className="text-xs text-ink-500 mb-4">{t("analytics.lowMarginHint")}</p>
+              {lowMarginProducts.length === 0 ? (
+                <EmptyState title={t("common.empty")} hint={t("analytics.lowMarginEmpty")} />
+              ) : (
                 <ul className="space-y-2.5">
-                  {data.low_margin_products.map((p) => (
+                  {lowMarginProducts.map((p) => (
                     <li key={p.id} className="flex items-center justify-between text-sm">
                       <span className="text-ink-700 truncate max-w-[60%]">{p.name}</span>
                       <span className="text-warn-500 font-medium">{formatPercent(p.margin_percent)}</span>

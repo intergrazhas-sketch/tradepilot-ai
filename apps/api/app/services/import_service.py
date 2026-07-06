@@ -33,7 +33,12 @@ def _normalize_row(raw: dict[str, Any]) -> dict[str, str]:
 
 def parse_csv(content: bytes) -> list[dict[str, str]]:
     text = content.decode("utf-8-sig")
-    reader = csv.DictReader(io.StringIO(text))
+    sample = text[:4096]
+    try:
+        dialect = csv.Sniffer().sniff(sample, delimiters=",;\t")
+    except csv.Error:
+        dialect = csv.excel
+    reader = csv.DictReader(io.StringIO(text), dialect=dialect)
     return [_normalize_row(row) for row in reader]
 
 

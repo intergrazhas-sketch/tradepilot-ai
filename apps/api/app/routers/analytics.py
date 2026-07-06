@@ -3,11 +3,13 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app import models, schemas
+from app.config import get_settings
 from app.routers.dashboard import _build_recommendations
 from app.services.pricing import calc_margin_percent
 from app.services.decision_service import product_snapshot
 
 router = APIRouter(prefix="/api/v1/analytics", tags=["analytics"])
+settings = get_settings()
 
 
 def _build_snapshots(products: list) -> list[dict]:
@@ -36,7 +38,10 @@ def analytics_summary(db: Session = Depends(get_db)):
         reverse=True,
     )[:5]
     low_margin = sorted(
-        [s for s in snapshots if s["margin_percent"] < 20 and s["selling_price"] > 0],
+        [
+            s for s in snapshots
+            if s["margin_percent"] < settings.DEFAULT_MIN_MARGIN_PERCENT and s["selling_price"] > 0
+        ],
         key=lambda x: x["margin_percent"],
     )[:5]
     out_of_stock = [s for s in snapshots if (s["stock_quantity"] or 0) <= 0][:10]
@@ -124,7 +129,10 @@ def profit_analytics(db: Session = Depends(get_db)):
     ]
 
     top_profit = sorted(scored, key=lambda x: x["margin_percent"], reverse=True)[:5]
-    low_margin = sorted(scored, key=lambda x: x["margin_percent"])[:5]
+    low_margin = sorted(
+        [s for s in scored if s["margin_percent"] < settings.DEFAULT_MIN_MARGIN_PERCENT],
+        key=lambda x: x["margin_percent"],
+    )[:5]
 
     return schemas.ProfitAnalytics(
         revenue=revenue,

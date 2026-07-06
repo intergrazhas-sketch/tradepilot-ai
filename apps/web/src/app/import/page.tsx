@@ -9,15 +9,24 @@ import { api } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
 import type { Supplier, ImportPreviewResponse, ImportCommitResponse } from "@/types";
 
-const SAMPLE_CSV = `sku,name,description,category,brand,cost_price,stock_quantity,currency,image_url
-EL-9001,Bluetooth наушники TWS,Беспроводные наушники с кейсом,Электроника,SoundMax,4500,20,KZT,
-HM-9002,Набор кастрюль 3 предмета,Антипригарное покрытие,Дом и быт,HomeStyle,12000,5,KZT,`;
+const SAMPLE_ROWS: string[][] = [
+  ["sku", "name", "description", "category", "brand", "cost_price", "stock_quantity", "currency", "image_url"],
+  ["EL-9001", "Bluetooth TWS Headphones", "Wireless earbuds with charging case", "Electronics", "SoundMax", "4500", "20", "KZT", ""],
+  ["HM-9002", "Cookware Set 3 pcs", "Non-stick coating", "Home & Kitchen", "HomeStyle", "12000", "5", "KZT", ""],
+];
 
-const ROW_STATUS_LABEL: Record<string, string> = {
-  new: "Новый",
-  update: "Обновление",
-  error: "Ошибка",
-};
+const CSV_DELIMITER = ";";
+
+function escapeCsvCell(value: string): string {
+  if (value.includes(CSV_DELIMITER) || value.includes('"') || value.includes("\n") || value.includes("\r")) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
+function buildSampleCsv(): string {
+  return SAMPLE_ROWS.map((row) => row.map(escapeCsvCell).join(CSV_DELIMITER)).join("\r\n");
+}
 
 const ROW_STATUS_CLASS: Record<string, string> = {
   new: "bg-brand-50 text-brand-600",
@@ -27,6 +36,15 @@ const ROW_STATUS_CLASS: Record<string, string> = {
 
 export default function ImportPage() {
   const { t } = useI18n();
+
+  const rowStatusLabel = (status: string) => {
+    const map: Record<string, string> = {
+      new: t("import.rowStatusNew"),
+      update: t("import.rowStatusUpdate"),
+      error: t("import.rowStatusError"),
+    };
+    return map[status] || status;
+  };
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [supplierId, setSupplierId] = useState("");
   const [preview, setPreview] = useState<ImportPreviewResponse | null>(null);
@@ -74,7 +92,8 @@ export default function ImportPage() {
   };
 
   const downloadSample = () => {
-    const blob = new Blob([SAMPLE_CSV], { type: "text/csv" });
+    const bom = "\uFEFF";
+    const blob = new Blob([bom + buildSampleCsv()], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -111,7 +130,7 @@ export default function ImportPage() {
         </div>
         <div className="grid md:grid-cols-[1fr_auto] gap-4 items-end">
           <Select label={t("import.selectSupplier")} value={supplierId} onChange={(e) => setSupplierId(e.target.value)}>
-            {suppliers.length === 0 && <option value="">Сначала добавьте поставщика</option>}
+            {suppliers.length === 0 && <option value="">{t("import.noSupplierFirst")}</option>}
             {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </Select>
           <div className="flex gap-2 flex-wrap">
@@ -182,12 +201,12 @@ export default function ImportPage() {
             <table className="w-full text-sm min-w-[900px]">
               <thead>
                 <tr className="border-b border-line text-left text-xs text-ink-500">
-                  <th className="px-4 py-2.5 font-medium">SKU</th>
-                  <th className="px-4 py-2.5 font-medium">Название</th>
-                  <th className="px-4 py-2.5 font-medium">Категория</th>
-                  <th className="px-4 py-2.5 font-medium">Закупка</th>
-                  <th className="px-4 py-2.5 font-medium">Рек. цена</th>
-                  <th className="px-4 py-2.5 font-medium">Остаток</th>
+                  <th className="px-4 py-2.5 font-medium">{t("import.colSku")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("import.colName")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("import.colCategory")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("import.colCost")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("import.colSuggestedPrice")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("import.colStock")}</th>
                   <th className="px-4 py-2.5 font-medium">{t("common.status")}</th>
                 </tr>
               </thead>
@@ -202,7 +221,7 @@ export default function ImportPage() {
                     <td className="px-4 py-2.5 text-ink-700">{row.stock_quantity}</td>
                     <td className="px-4 py-2.5">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${ROW_STATUS_CLASS[row.row_status] || ""}`}>
-                        {ROW_STATUS_LABEL[row.row_status] || row.row_status}
+                        {rowStatusLabel(row.row_status)}
                       </span>
                       {row.error && (
                         <div className="text-xs text-danger-600 mt-1 font-medium">

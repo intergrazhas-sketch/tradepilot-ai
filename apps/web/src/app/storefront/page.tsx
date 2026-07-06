@@ -11,7 +11,7 @@ import { productDisplayTitle, productDisplayDescription } from "@/components/Pro
 import type { Product, Supplier } from "@/types";
 
 function isStorefrontProduct(p: Product) {
-  return p.decision_status === "good" || p.test_status === "candidate";
+  return p.listing_status === "ready";
 }
 
 export default function StorefrontPage() {
@@ -30,7 +30,7 @@ export default function StorefrontPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    Promise.all([api.listProducts(), api.listSuppliers()])
+    Promise.all([api.listListingReady(), api.listSuppliers()])
       .then(([ps, ss]) => {
         setProducts(ps.filter(isStorefrontProduct));
         setSuppliers(ss);
