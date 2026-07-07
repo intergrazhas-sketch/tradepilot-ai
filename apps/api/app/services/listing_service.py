@@ -5,8 +5,15 @@ from __future__ import annotations
 from datetime import datetime
 
 from app.config import get_settings
-from app.services.ai_service import get_ai_provider
 from app.services.decision_service import product_snapshot
+from app.services.listing_locale import (
+    build_listing_description,
+    build_listing_keywords,
+    build_listing_title,
+    localize_category,
+    localize_phrase,
+    normalize_locale,
+)
 from app.services.pricing import calc_margin_percent
 
 VALID_LISTING_STATUSES = {"draft", "ready", "needs_review"}
@@ -14,20 +21,15 @@ SUPPORTED_LOCALES = {"ru", "en", "kz"}
 
 
 def _normalize_locale(locale: str | None) -> str:
-    value = (locale or "ru").lower().strip()
-    return value if value in SUPPORTED_LOCALES else "ru"
-
-
-def _display_name(product) -> str:
-    return (product.name_ai or product.name_raw or "").strip()
+    return normalize_locale(locale)
 
 
 def _build_bullets(product, snap: dict, locale: str) -> list[str]:
     loc = _normalize_locale(locale)
     bullets: list[str] = []
-    name = _display_name(product)
+    name = localize_phrase(product.name_raw or "", loc)
     brand = product.brand
-    category = product.category
+    category = localize_category(product.category, loc)
     margin = snap["margin_percent"]
     currency = product.currency or "KZT"
 
@@ -82,21 +84,6 @@ def _build_bullets(product, snap: dict, locale: str) -> list[str]:
     return bullets[:5]
 
 
-def _build_keywords(product) -> list[str]:
-    keywords: list[str] = []
-    for val in (product.category, product.brand, product.sku):
-        if val and str(val).strip():
-            keywords.append(str(val).strip())
-    name = _display_name(product)
-    for word in name.split():
-        w = word.strip(".,-—|")
-        if len(w) >= 3 and w.lower() not in {k.lower() for k in keywords}:
-            keywords.append(w)
-        if len(keywords) >= 8:
-            break
-    return keywords[:8]
-
-
 def calc_listing_score(product, bullets: list[str] | None, keywords: list[str] | None) -> int:
     score = 0
     if (product.listing_title or "").strip():
@@ -134,21 +121,32 @@ def resolve_listing_status(score: int, snap: dict) -> str:
 
 
 def generate_product_listing(product, locale: str = "ru") -> dict:
-    """Generate listing fields; reuses AI provider when configured, else rule-based mock."""
+    """Generate fully localized listing fields from raw product facts."""
     loc = _normalize_locale(locale)
     snap = product_snapshot(product)
     settings = get_settings()
-    provider = get_ai_provider()
     use_ai_label = settings.AI_PROVIDER == "openai" and bool(settings.OPENAI_API_KEY)
 
-    base_name = product.name_raw or ""
-    title = provider.improve_title(base_name, product.brand, product.category, locale=loc)
-
-    desc_source = product.description_raw
-    description = provider.improve_description(title, desc_source, product.brand, locale=loc)
-
+    title = build_listing_title(
+        product.name_raw or "",
+        product.brand,
+        product.category,
+        loc,
+    )
+    description = build_listing_description(
+        title,
+        product.description_raw,
+        product.brand,
+        loc,
+    )
     bullets = _build_bullets(product, snap, loc)
-    keywords = _build_keywords(product)
+    keywords = build_listing_keywords(
+        name_raw=product.name_raw or "",
+        brand=product.brand,
+        category=product.category,
+        sku=product.sku,
+        locale=loc,
+    )
 
     product.listing_title = title
     product.listing_description = description
