@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Modal, Button, Input, Textarea, Select, ErrorBanner } from "@/components/ui";
 import { useI18n } from "@/lib/i18n-context";
-import { displayProductTitle } from "@/lib/product-display";
+import { displayCatalogProductTitle, displayListingDescription, displayListingTitle } from "@/lib/product-display";
 import { api } from "@/lib/api";
 import type { Product, ProductListing } from "@/types";
 
@@ -105,7 +105,7 @@ export function ProductListingModal({ product, open, onClose, onSaved }: Props) 
       <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
         {error && <ErrorBanner message={error} />}
         <div className="flex items-center justify-between text-sm">
-          <span className="text-ink-600">{displayProductTitle(product, locale)}</span>
+          <span className="text-ink-600">{displayCatalogProductTitle(product, locale)}</span>
           <span className="font-semibold text-brand-600">{t("listing.score")}: {score}</span>
         </div>
         <div className="space-y-1">
@@ -141,5 +141,4 @@ export function listingStatusLabel(t: (k: string) => string, status?: string) {
   return t("listing.statusDraft");
 }
 
-/** Prefer displayProductTitle(product, locale) from @/lib/product-display */
-export { displayProductTitle as productDisplayTitle, displayProductSubtitle as productDisplayDescription } from "@/lib/product-display";
+export { displayListingTitle as productDisplayTitle, displayListingDescription as productDisplayDescription } from "@/lib/product-display";

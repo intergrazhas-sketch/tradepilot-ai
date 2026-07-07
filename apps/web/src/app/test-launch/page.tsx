@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
 import { Card, Button, Select, Spinner, EmptyState, ErrorBanner } from "@/components/ui";
-import { productDisplayTitle } from "@/components/ProductListingModal";
+import { displayCatalogProductTitle } from "@/lib/product-display";
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
@@ -168,7 +168,7 @@ export default function TestLaunchPage() {
                 return (
                   <tr key={p.id} className="border-b border-line last:border-0 hover:bg-canvas/50 align-top">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-ink-900">{productDisplayTitle(p, locale)}</div>
+                      <div className="font-medium text-ink-900">{displayCatalogProductTitle(p, locale)}</div>
                       <div className="text-xs text-ink-500">{p.sku || "—"}</div>
                     </td>
                     <td className="px-4 py-3 text-ink-700">{p.supplier_name || "—"}</td>

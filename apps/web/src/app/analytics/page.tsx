@@ -6,12 +6,13 @@ import { Card, StatCard, Spinner, ErrorBanner, EmptyState } from "@/components/u
 import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
+import { displayProductNameSnapshot } from "@/lib/product-display";
 import type { ProfitAnalytics } from "@/types";
 
 const LOW_MARGIN_THRESHOLD_PERCENT = 15;
 
 export default function AnalyticsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [data, setData] = useState<ProfitAnalytics | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,7 +62,7 @@ export default function AnalyticsPage() {
                 <ul className="space-y-2.5">
                   {data.top_profit_products.map((p) => (
                     <li key={p.id} className="flex items-center justify-between text-sm">
-                      <span className="text-ink-700 truncate max-w-[60%]">{p.name}</span>
+                      <span className="text-ink-700 truncate max-w-[60%]">{displayProductNameSnapshot(p.name, locale)}</span>
                       <span className="text-profit-500 font-medium">{formatPercent(p.margin_percent)}</span>
                     </li>
                   ))}
@@ -78,7 +79,7 @@ export default function AnalyticsPage() {
                 <ul className="space-y-2.5">
                   {lowMarginProducts.map((p) => (
                     <li key={p.id} className="flex items-center justify-between text-sm">
-                      <span className="text-ink-700 truncate max-w-[60%]">{p.name}</span>
+                      <span className="text-ink-700 truncate max-w-[60%]">{displayProductNameSnapshot(p.name, locale)}</span>
                       <span className="text-warn-500 font-medium">{formatPercent(p.margin_percent)}</span>
                     </li>
                   ))}
