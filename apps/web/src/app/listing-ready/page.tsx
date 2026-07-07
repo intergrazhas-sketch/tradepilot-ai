@@ -10,7 +10,7 @@ import { formatMoney, formatPercent } from "@/lib/format";
 import type { Product, Supplier } from "@/types";
 
 export default function ListingReadyPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [products, setProducts] = useState<Product[] | null>(null);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export default function ListingReadyPage() {
               {products.map((p) => (
                 <tr key={p.id} className="border-b border-line last:border-0 hover:bg-canvas/50">
                   <td className="px-4 py-3">
-                    <div className="font-medium text-ink-900">{productDisplayTitle(p)}</div>
+                    <div className="font-medium text-ink-900">{productDisplayTitle(p, locale)}</div>
                     <div className="text-xs text-ink-500 line-clamp-2 mt-0.5">{p.listing_description || "—"}</div>
                   </td>
                   <td className="px-4 py-3 font-medium">{formatMoney(p.selling_price, p.currency)}</td>

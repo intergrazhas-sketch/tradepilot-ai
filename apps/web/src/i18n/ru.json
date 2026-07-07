@@ -249,6 +249,9 @@
   "products.recalcPrice": "Пересчитать цену",
   "products.supplier": "Поставщик",
   "products.noCategory": "Без категории",
+  "products.delete": "Удалить",
+  "products.deleteConfirm": "Удалить товар? Это действие нельзя отменить.",
+  "products.deleteHasOrders": "Товар уже есть в заказах, удалить нельзя.",
   "products.description": "Описание",
 
   "import.title": "Импорт товаров",

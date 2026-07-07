@@ -249,6 +249,9 @@
   "products.recalcPrice": "Бағаны қайта есептеу",
   "products.supplier": "Жеткізуші",
   "products.noCategory": "Санатсыз",
+  "products.delete": "Жою",
+  "products.deleteConfirm": "Тауарды жою керек пе? Бұл әрекетті қайтару мүмкін емес.",
+  "products.deleteHasOrders": "Бұл тауар тапсырыстарда бар, жою мүмкін емес.",
   "products.description": "Сипаттама",
 
   "import.title": "Тауарларды импорттау",

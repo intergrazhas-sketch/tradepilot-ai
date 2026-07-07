@@ -12,6 +12,7 @@ from app.services.listing_service import (
     listing_dict,
     resolve_listing_status,
 )
+from app.services.product_service import PRODUCT_HAS_ORDERS_CODE, delete_product_safe
 
 router = APIRouter(prefix="/api/v1/products", tags=["products"])
 
@@ -204,8 +205,13 @@ def delete_product(product_id: str, db: Session = Depends(get_db)):
     product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not product:
         raise HTTPException(404, "Product not found")
-    db.delete(product)
-    db.commit()
+    try:
+        delete_product_safe(db, product)
+        db.commit()
+    except ValueError as exc:
+        if str(exc) == PRODUCT_HAS_ORDERS_CODE:
+            raise HTTPException(status_code=409, detail=PRODUCT_HAS_ORDERS_CODE)
+        raise
     return None
 
 

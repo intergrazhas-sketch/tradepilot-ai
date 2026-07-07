@@ -249,6 +249,9 @@
   "products.recalcPrice": "Recalculate price",
   "products.supplier": "Supplier",
   "products.noCategory": "No category",
+  "products.delete": "Delete",
+  "products.deleteConfirm": "Delete this product? This action cannot be undone.",
+  "products.deleteHasOrders": "This product has orders and cannot be deleted.",
   "products.description": "Description",
 
   "import.title": "Import products",

@@ -9,6 +9,7 @@ import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { translateDecisionReason, emptyDisplay } from "@/lib/app-text";
+import { displayProductCategory, displayProductTitle, localizeCategory } from "@/lib/product-display";
 import type { Product, Supplier } from "@/types";
 
 type DecisionFilter = "" | "good" | "risk" | "bad";
@@ -22,7 +23,7 @@ export default function ProductsPageWrapper() {
 }
 
 function ProductsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[] | null>(null);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -125,6 +126,22 @@ function ProductsPage() {
     }
   };
 
+  const removeProduct = async (id: string) => {
+    if (!window.confirm(t("products.deleteConfirm"))) return;
+    setBusyId(id);
+    setError(null);
+    try {
+      await api.deleteProduct(id);
+      if (listingProduct?.id === id) setListingProduct(null);
+      load();
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      setError(message === "product_has_orders" ? t("products.deleteHasOrders") : message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const filterBtn = (value: DecisionFilter, label: string) => (
     <Button
       key={value || "all"}
@@ -153,7 +170,7 @@ function ProductsPage() {
         </Select>
         <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="max-w-[220px]">
           <option value="">{t("products.filterByCategory")}: {t("common.all")}</option>
-          {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+          {categories.map((c) => <option key={c} value={c}>{localizeCategory(c, locale)}</option>)}
         </Select>
       </div>
 
@@ -192,8 +209,8 @@ function ProductsPage() {
                 return (
                 <tr key={p.id} className="border-b border-line last:border-0 hover:bg-canvas/50 align-top">
                   <td className="px-4 py-3">
-                    <div className="font-medium text-ink-900">{p.name_ai || p.name_raw}</div>
-                    <div className="text-xs text-ink-500 mb-1.5">{emptyDisplay(t, p.sku)} · {p.category || t("products.noCategory")}</div>
+                    <div className="font-medium text-ink-900">{displayProductTitle(p, locale)}</div>
+                    <div className="text-xs text-ink-500 mb-1.5">{emptyDisplay(t, p.sku)} · {displayProductCategory(p, locale) || t("products.noCategory")}</div>
                     <div className="flex flex-wrap gap-1.5">
                       <DecisionBadge status={p.decision_status} label={decisionLabel(p.decision_status)} />
                       <TestStatusBadge status={p.test_status} label={testLabel(p.test_status)} />
@@ -253,6 +270,14 @@ function ProductsPage() {
                         onClick={() => setTestStatus(p.id, "candidate")}
                       >
                         {t("testStatus.markCandidate")}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="!px-2.5 !py-1 text-xs w-full justify-start border border-danger-500/20 text-danger-500"
+                        disabled={busyId === p.id}
+                        onClick={() => removeProduct(p.id)}
+                      >
+                        {t("products.delete")}
                       </Button>
                     </div>
                   </td>

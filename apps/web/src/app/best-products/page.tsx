@@ -9,12 +9,13 @@ import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { translateDecisionReason } from "@/lib/app-text";
+import { displayProductTitle } from "@/lib/product-display";
 import type { Product, Supplier } from "@/types";
 
 type SortBy = "score" | "profit" | "margin";
 
 export default function BestProductsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [products, setProducts] = useState<Product[] | null>(null);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [sortBy, setSortBy] = useState<SortBy>("score");
@@ -101,7 +102,7 @@ export default function BestProductsPage() {
               {products.map((p) => (
                 <tr key={p.id} className="border-b border-line last:border-0 hover:bg-canvas/50 align-top">
                   <td className="px-4 py-3">
-                    <div className="font-medium text-ink-900">{p.name_ai || p.name_raw}</div>
+                    <div className="font-medium text-ink-900">{displayProductTitle(p, locale)}</div>
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       <DecisionBadge status="good" label={t("decision.good")} />
                       <TestStatusBadge status={p.test_status} label={testLabel(p.test_status)} />

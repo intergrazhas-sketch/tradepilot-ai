@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n-context";
 import { api } from "@/lib/api";
 import { formatMoney, formatDate, formatPercent } from "@/lib/format";
 import { statusLabel as resolveStatusLabel } from "@/lib/app-text";
+import { displayOrderProductName } from "@/lib/product-display";
 import { ORDER_STATUSES, type Order, type OrdersSummary } from "@/types";
 
 const STATUS_ACTIONS: { status: string; key: string; variant?: "secondary" | "ghost" }[] = [
@@ -18,7 +19,7 @@ const STATUS_ACTIONS: { status: string; key: string; variant?: "secondary" | "gh
 ];
 
 export default function OrdersPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [summary, setSummary] = useState<OrdersSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +55,8 @@ export default function OrdersPage() {
 
   const orderStatusLabel = (status: string) => resolveStatusLabel(t, status, "order");
 
-  const productLabel = (o: Order) => o.product_name || t("orders.unknownProduct");
+  const productLabel = (o: Order) =>
+    displayOrderProductName(o.product_name, locale) || t("orders.unknownProduct");
 
   const isFinal = (status: string) => status === "cancelled" || status === "delivered";
 

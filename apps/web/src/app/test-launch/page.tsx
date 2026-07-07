@@ -46,7 +46,7 @@ function statusBadgeClass(status?: string) {
 }
 
 export default function TestLaunchPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [products, setProducts] = useState<TestLaunchProduct[] | null>(null);
   const [summary, setSummary] = useState<TestLaunchSummary | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
@@ -168,7 +168,7 @@ export default function TestLaunchPage() {
                 return (
                   <tr key={p.id} className="border-b border-line last:border-0 hover:bg-canvas/50 align-top">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-ink-900">{productDisplayTitle(p)}</div>
+                      <div className="font-medium text-ink-900">{productDisplayTitle(p, locale)}</div>
                       <div className="text-xs text-ink-500">{p.sku || "—"}</div>
                     </td>
                     <td className="px-4 py-3 text-ink-700">{p.supplier_name || "—"}</td>

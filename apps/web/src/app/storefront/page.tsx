@@ -15,7 +15,7 @@ function isStorefrontProduct(p: Product) {
 }
 
 export default function StorefrontPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [products, setProducts] = useState<Product[] | null>(null);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -50,8 +50,8 @@ export default function StorefrontPage() {
     if (!products) return [];
     if (!search) return products;
     const q = search.toLowerCase();
-    return products.filter((p) => productDisplayTitle(p).toLowerCase().includes(q));
-  }, [products, search]);
+    return products.filter((p) => productDisplayTitle(p, locale).toLowerCase().includes(q));
+  }, [products, search, locale]);
 
   const openOrder = (p: Product) => {
     setOrderProduct(p);
@@ -139,9 +139,9 @@ export default function StorefrontPage() {
               <DecisionBadge status={p.decision_status} label={decisionLabel(p.decision_status)} />
               <span className="text-xs text-ink-500">{t("decision.score")}: {p.decision_score}</span>
             </div>
-            <div className="text-sm font-medium text-ink-900 mb-1 line-clamp-2 flex-1">{productDisplayTitle(p)}</div>
-            {productDisplayDescription(p) && (
-              <p className="text-xs text-ink-500 mb-2 line-clamp-2">{productDisplayDescription(p)}</p>
+            <div className="text-sm font-medium text-ink-900 mb-1 line-clamp-2 flex-1">{productDisplayTitle(p, locale)}</div>
+            {productDisplayDescription(p, locale) && (
+              <p className="text-xs text-ink-500 mb-2 line-clamp-2">{productDisplayDescription(p, locale)}</p>
             )}
             <div className="text-xs text-ink-500 mb-3">{t("products.supplier")}: {supplierName(p.supplier_id)}</div>
             <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs mb-4">
@@ -175,7 +175,7 @@ export default function StorefrontPage() {
       <Modal open={!!orderProduct} onClose={() => setOrderProduct(null)} title={t("storefront.createOrder")}>
         {orderProduct && !success && (
           <div className="space-y-3">
-            <div className="text-sm font-medium text-ink-900">{productDisplayTitle(orderProduct)}</div>
+            <div className="text-sm font-medium text-ink-900">{productDisplayTitle(orderProduct, locale)}</div>
             <div className="text-xs text-ink-500">{t("products.supplier")}: {supplierName(orderProduct.supplier_id)}</div>
             <Input
               label={t("storefront.quantity")}
